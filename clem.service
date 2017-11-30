@@ -1,15 +1,27 @@
-[Unit]
-Description=clem app
-After=network.target
+description "node.js server"
+author      "Foo Bar"
 
-[Service]
-ExecStart=/var/www/myapp/app.js
-Restart=always
-User=nobody
-Group=nobody
-Environment=PATH=/usr/bin:/usr/local/bin
-Environment=NODE_ENV=production
-WorkingDirectory=/var/www/myapp
+# used to be: start on startup
+# until we found some mounts weren't ready yet while booting
 
-[Install]
-WantedBy=multi-user.target
+start on started mountall
+stop on shutdown
+
+# automatically respawn
+
+respawn
+respawn limit 99 5
+
+script
+    
+    export HOME="/root"
+    exec /usr//bin/nodejs /path/to/yourapp.js >> /var/log/node.log 2>&1
+
+end script
+
+post-start script
+   
+   # optionally put a script here that will notifiy you node has (re)started
+   # /root/bin/hoptoad.sh "node.js has started!"
+   
+end script
