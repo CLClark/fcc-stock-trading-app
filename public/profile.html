@@ -3,7 +3,7 @@
 <html>
 
 	<head>
-		<title>Clementine.js - The elegant and lightweight full stack JavaScript boilerplate.</title>
+		<title>Vota-Rama! Profile</title>
 		
 		<link href="/public/css/main.css" rel="stylesheet" type="text/css">
 	</head>
@@ -18,9 +18,18 @@
 				<p><span>Repositories: </span><span id="profile-repos" class="profile-value"></span></p>
 				<a class="menu" href="/">Home</a>
 				<p id="menu-divide">|</p>
-				<a class="menu" href="/logout">Logout</a>
-			</div>
+				<a class="menu" href="/logout">Logout</a>				
+			</div>		
 		</div>
+
+		<div class="container">
+			<div class="github-profile poll-profile" id="poll-profile">
+				<p><span>Polls: </span><span id="profile-polls" class="profile-value"></span></p>
+				<div class="poll-profile-control" id="poll-profile-control"></div>
+			</div>		
+		</div>
+
+
 		
 		<script type="text/javascript" src="common/ajax-functions.js"></script>
 		<script type="text/javascript" src="controllers/userController.client.js"></script>

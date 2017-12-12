@@ -120,7 +120,7 @@ img {
 }
 
 .btn {	/* Styling for buttons */
-	margin: 0 8px;
+	margin: 5px 10px;
 	color: white;
 	background-color: #00BCD4;
 	display: inline-block;
@@ -154,7 +154,8 @@ img {
 /****** Profile Styling ******/
 
 .github-profile {
-	width: 350px;
+	/*width: 350px;*/
+	width: 100%;
 	height: 200px;
 	border-radius: 3px;
 	margin: 86px auto 0 auto;
@@ -201,4 +202,68 @@ span {
 	color: #FFFFFF;
 	display: inline;
 	margin: 0;
+}
+
+/******* poll styles **********/
+.poll-wrap-sup{
+	padding:10px 10px 10px 10px;
+	border: grey;
+	border-style: double;
+}
+
+ul.poll-view-list{
+	list-style-type: none;
+}
+
+.poll-view-list-poll{
+	margin: 0 0 50px 0;
+	/*flex: 0 0 70%;
+	padding: 0 10% 0 0;
+	*/
+}
+
+.poll-wrap{
+	display: flex;
+	padding: 10px 0 0 0;
+}
+
+
+.choice-btn {
+	background-color: red;
+}
+
+#vote-controls{
+	display: flex;
+	flex-direction: column;		
+}
+
+#vote-controls .vote{
+	height: 50px;
+}
+
+.vote-btn, .add-choice, .choice-btn{	
+	white-space: nowrap;	
+	width: 120px;
+}
+
+.vote-btn:hover, .choice-btn:hover{
+	width: 118px;
+	height: auto;
+	white-space: normal;
+	word-wrap: break-word;
+	box-sizing: content-box;
+	word-wrap: break-word;
+	border: 1px solid red;
+	position: relative;		
+	
+}
+
+.poll-title{
+	padding: 0 0 10px 0;
+}
+
+.control-btns{
+	display: flex;
+	flex-direction: row;
+	justify-content: center;
 }

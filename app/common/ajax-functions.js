@@ -13,7 +13,7 @@ var ajaxFunctions = {
 
       document.addEventListener('DOMContentLoaded', fn, false);
    },
-   ajaxRequest: function ajaxRequest (method, url, callback) {
+   ajaxRequest: function ajaxRequest (method, url, syncBoo, callback) {
       var xmlhttp = new XMLHttpRequest();
 
       xmlhttp.onreadystatechange = function () {
@@ -22,7 +22,7 @@ var ajaxFunctions = {
          }
       };
 
-      xmlhttp.open(method, url, true);
+      xmlhttp.open(method, url);//, syncBoo);//added boolean for async
       xmlhttp.send();
-   }
+   },
 };
