@@ -9,13 +9,13 @@
 
    var apiUrl = appUrl + '/api/:id';
 
-   function updateHtmlElement (data, element, userProperty) {
-      element.innerHTML = data[userProperty];
+   function updateHtmlElement (dataU, element, userProperty) {
+      element.innerHTML = dataU[userProperty];
    }
 
-   ajaxFunctions.ready(ajaxFunctions.ajaxRequest('GET', apiUrl, false, function (data) {
-         var userObject = JSON.parse(data);
-
+   ajaxFunctions.ready(ajaxFunctions.ajaxRequest('GET', apiUrl, false, function (dataU) {
+         var userObject = JSON.parse(dataU);
+         
          if (userObject.displayName !== null) {
             updateHtmlElement(userObject, displayName, 'displayName');
          } else {
@@ -37,22 +37,24 @@
       })
    );
 
+/********************************************************/
+
+   /*
    var profilePolls = document.querySelector('#profile-polls') || null;
    var pollApi = appUrl + '/polls/db';
 
-   function updateInnerElement (data, element) {
-      element.innerHTML = data;
+   function updateInnerElement (dataU, element) {
+      element.innerHTML = dataU;
    }
 
-   ajaxFunctions.ready(ajaxFunctions.ajaxRequest('GET', pollApi, false, function (data) {
-         var pollObject = JSON.parse(data);
-
+   ajaxFunctions.ready(ajaxFunctions.ajaxRequest('GET', pollApi, false, function (dataU) {
+         var pollObject = JSON.parse(dataU);
          if (profilePolls !== null) {
             updateInnerElement(JSON.stringify(pollObject), profilePolls);   
          }
-
       })
-   ); 
+   );
+
 
    var controlWrap = document.createElement("div");
    controlWrap.className = "control-btns";
@@ -100,22 +102,15 @@
       }        
       clickFlag = true;    
    }, false);
+   
+   var controlPad = document.querySelector('.poll-profile-control') || null;
+   if(controlPad !== null){
+      controlPad.appendChild(controlWrap);
+   }
+
 
    function callbackClick(cb){
       cb();
-   }
-
-   var deletePoll = document.createElement("div");
-   deletePoll.className = ("delete-poll");
-      var actionDel = document.createElement('a');
-         var pollDel = document.createElement('div');
-         pollDel.className = "btn choice-btn";
-         pollDel.innerHTML = "Delete Poll";
-      actionDel.appendChild(pollDel);
-      deletePoll.appendChild(actionDel);
-   controlWrap.appendChild(deletePoll);
-
-   document.querySelector('#poll-profile-control').appendChild(controlWrap);
-
-
+   }  
+   */ 
 })();

@@ -156,7 +156,7 @@ img {
 .github-profile {
 	/*width: 350px;*/
 	width: 100%;
-	height: 200px;
+	height: 100%;
 	border-radius: 3px;
 	margin: 86px auto 0 auto;
 	background-color: #EEE;
@@ -209,10 +209,13 @@ span {
 	padding:10px 10px 10px 10px;
 	border: grey;
 	border-style: double;
+	background-color: white;
 }
 
 ul.poll-view-list{
 	list-style-type: none;
+	padding-right: 5%;
+	padding-left: 5%;
 }
 
 .poll-view-list-poll{

@@ -20,7 +20,7 @@ function PollsHandler () {
 	this.getPolls = function (req, res) {
 		console.log('handler.server.js.getPolls');
 		Polls
-		.find({ "github.id": req.user.github.id}, function (err, result) {
+		.find({ $and: [{ "github.id": req.user.github.id}, {'active': { $eq: true } } ]}, function (err, result) {
 			if (err) { throw err; }
 			var toSend = pollBuilder(result);
 			console.log('handler.server.js.getPolls ' + result.length);				
@@ -30,7 +30,7 @@ function PollsHandler () {
 
 	this.allPolls = function (req, res) {
 		Polls
-		.find({active: true}, function (err, result){			
+		.find({'active': true}, function (err, result){			
 			if(err) {throw err;}
 			var aggregator = [];		
 			var currentPoll = ""; var currentPIndex = -1;
@@ -119,7 +119,18 @@ function PollsHandler () {
 	}
 
 	this.deletePoll = function (req, res) {
-		console.log('deletePoll callback');
+		console.log('deletePoll callback');		
+		var pollToDel = req.query.pid;
+		Polls.findByIdAndUpdate(pollToDel, { $set: { active: false }},{lean: false}, function (err, result){			
+			if(err) {throw err;}
+			console.log(req.query.pid);
+			// if(req.user.github.id == result.owner){
+				//result.active = false;
+				//result.save;
+			console.log(result);
+				//res.json(result);										
+			// }
+		});		
 	}
 
 	this.removeChoice = function (req, res) {

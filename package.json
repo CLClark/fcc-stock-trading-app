@@ -7,7 +7,7 @@
     "type": "git",
     "url": "git+https://github.com/johnstonbl01/clementinejs-fcc"
   },
-  "homepage": "http://www.clementinejs.com/",
+  "homepage": "http://127.0.0.1:8080/",
   "bugs": "https://github.com/johnstonbl01/clementinejs-fcc/issues",
   "keywords": [
     "MongoDB",

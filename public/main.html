@@ -9,10 +9,14 @@
 
 	<!--Load the AJAX API-->
 	<script type="text/javascript" src="common/ajax-functions.js"></script>
-	<script type="text/javascript" src="controllers/authController.client.js"></script>
 	<script type="text/javascript" src="https://www.gstatic.com/charts/loader.js"></script>
-	<script type="text/javascript" src="controllers/pollController.client.js"></script>	
-
+	<!-- -->
+	<script type="text/javascript" src="controllers/authController.client.js"></script>
+	<script type="text/javascript" src="controllers/pollController.client.js"></script>
+	<script type="text/javascript">
+	   MYLIBRARY.init(['/polls', 1, "controlId"]);
+	   MYLIBRARY.pollProducer(AUTHLIB.authScript);
+	</script>
 
 </head>
 
@@ -33,7 +37,7 @@
 		<br />
 		<p class="clementine-text">Vota-Rama!</p>
 	</div>
-	<!--Div that will hold the pie chart-->    
+	<!--Div that will hold the polls-->    
 	<div id="pollDb">
 		<ul id="poll-view" class="poll-view-list"></ul>
 	</div>	
