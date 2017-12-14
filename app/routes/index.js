@@ -45,7 +45,7 @@ module.exports = function (app, passport) {
 */
 
 	app.route('/')
-		.get(isLoggedIn, function (req, res) {
+		.get(function (req, res) {
 		//.get(function (req, res) {
 			res.sendFile(path + '/public/main.html');
 		});
@@ -107,5 +107,11 @@ module.exports = function (app, passport) {
 	app.route('/polls/db')
 		.get(isLoggedIn, pollsHandler.getPolls)
 		.delete(isLoggedIn, pollsHandler.deletePoll);
+
+	app.route('/polls/view')
+		.get( function(req, res){
+			res.sendFile( path + '/public/single.html');
+		})
+		.post(pollsHandler.singlePoll);
 		
 };

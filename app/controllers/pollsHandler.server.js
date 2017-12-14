@@ -2,6 +2,7 @@
 
 var Polls = require('../models/polls.js');
 var Users = require('../models/users.js');
+var mongoose = require('../models/users.js');
 
 function PollsHandler () {
 
@@ -27,6 +28,18 @@ function PollsHandler () {
 			res.send(JSON.stringify(toSend));				
 		});
 	}
+
+	this.singlePoll = function (req, res) {
+		var mongoose = require('mongoose');
+		console.log('handler.server.js.singlePoll');
+		var pollKey = mongoose.Types.ObjectId(req.query.pid);		
+		Polls
+		.find({ $and: [{ "_id": pollKey}, {'active': { $eq: true } } ]}, function (err, result) {
+			if (err) { throw err; }
+			var singleResult = pollBuilder(result);
+			res.send(JSON.stringify(singleResult));
+		});
+	};
 
 	this.allPolls = function (req, res) {
 		Polls

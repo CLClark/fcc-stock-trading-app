@@ -11,34 +11,40 @@
 		<script type="text/javascript" src="controllers/authController.client.js"></script>
 		<script type="text/javascript" src="controllers/pollController.client.js"></script>	
 		<script type="text/javascript">
-		   MYLIBRARY.init(["/polls/db", 1, "controlId"]);
+		   MYLIBRARY.init(["/polls/db", "GET", "controlId"]);
+		   AUTHLIB.init([AUTHLIB.authScript]);//setup ajax callbacck
 		   MYLIBRARY.pollProducer(AUTHLIB.userScript);
 		</script>		
 	</head>
 
 <header>
-	<p>Welcome Voter <span id="display-name"></span>!</p>
-	<span id="auth-container">
-		<div id="auth-instance">			
+	<div id="navi" class="navi-menu">
+		<div id="home-icon"></div>
+		<div class="container" id="welcome-container">
+			<p>Welcome Voter <span id="display-name"></span>!</p>
+			<span id="auth-container">
+			</span>
 		</div>
-	</span>
+
+	</div>
 </header>
 
 	<body>
 		<div class="container">
 			<div class="github-profile">
-				<img src="/public/img/gh-mark-32px.png" alt="github logo" />
-				<p><span>ID: </span><span id="profile-id" class="profile-value"></span></p>
-				<p><span>Username: </span><span id="profile-username" class="profile-value"></span></p>
-				<p><span>Display Name: </span><span id="display-name" class="profile-value"></span></p>
-				<p><span>Active Polls: </span><span id="active-poll-count" class="profile-value"></span></p>
-				
-			</div>		
-			<div class="poll-profile-control" id="poll-profile-control"></div>
+				<div class="github-profile-interface">
+					<!--<img src="/public/img/gh-mark-32px.png" alt="github logo" />-->
+					<p><span>ID: </span><span id="profile-id" class="profile-value"></span></p>
+					<p><span>Username: </span><span id="profile-username" class="profile-value"></span></p>					
+					<p><span>Active Polls: </span><span id="active-poll-count" class="profile-value"></span></p>
+					<div class="poll-profile-control" id="poll-profile-control"></div>
+				</div>
+			</div>
 		</div>
 
 		<div class="container">
-
+			<div class="poll-placeholder">
+			</div>
 		</div>
 
 
@@ -56,6 +62,9 @@
 	</body>
 
 	<footer>
+		<script type="text/javascript">
+			AUTHLIB.navi();   
+		</script>		
 	</footer>
 
 </html>

@@ -13,10 +13,11 @@ var MYLIBRARY = MYLIBRARY || (function () {
 
          function allOrNothing(){
             var apiUrl = _args[0];
+            var reqMethod = _args[1];
 
             function getTheJson(apiUrl, cb){
                ajaxFunctions.ready(
-                  ajaxFunctions.ajaxRequest('GET', apiUrl, true, function(data){
+                  ajaxFunctions.ajaxRequest(reqMethod, apiUrl, true, function(data){
                      cb(data);
                      //add another ajax call here
                      passedInFunction();
@@ -30,6 +31,11 @@ var MYLIBRARY = MYLIBRARY || (function () {
                var jsonData = JSON.parse(jsonResponse);
                //number of polls to make
                var numPolls = jsonData.length || 0;
+
+               var pollCount = document.querySelector('#active-poll-count') || null;
+               if (pollCount !== null) {
+                  pollCount.innerHTML = numPolls;
+               }
 
                for(var i = 0; i < numPolls; i++){
                   //create a div for each poll
@@ -47,6 +53,16 @@ var MYLIBRARY = MYLIBRARY || (function () {
                      //drawAPoll(jdata1, pdata1)
                      //function drawAPoll(jdata3, pdata3){
                   document.getElementById(pString).parentNode.parentNode.addEventListener('click', function(element){
+                     /*
+                     if(this.parentNode.childNodes[1].style.display == "flex"){
+                        //this.parentNode.childNodes[1].style.display = "none";   
+                     } else {
+                        this.parentNode.childNodes[1].style.display = "flex";
+                     */
+
+                     this.childNodes[1].childNodes[2].style.display = "none"; //hide the "show results" text
+
+                  //document.getElementById(pString).parentNode.addEventListener('click', function(element){
                      //document.getElementById(pString).addEventListener('click', function(element2){
                         //console.log(this.getAttribute("poll-data"));
                         var jArray = JSON.parse(this.childNodes[1].childNodes[1].getAttribute("poll-data"));
@@ -54,25 +70,31 @@ var MYLIBRARY = MYLIBRARY || (function () {
                         var cData = new google.visualization.arrayToDataTable(jArray);
                         //var view = new google.visualization.DataView(cData);
                         var options = {
+                           colors: ['#212dcd'],
                            bars: 'horizontal',
-                           bar: {groupWidth: '50px'},
-                           forceIFrame: true,
-                           chartArea: { left: 0, top: 0, height: '100%' },
-                           vAxis: { textPosition: 'in'},
+                           bar: {
+                              "groupWidth": '50px'
+                           },
+                           //forceIFrame: true,
+                           chartArea: { left: 0, top: 0, height: '99%' },
+                           vAxis: { textPosition: 'none'},
                            hAxis: { textPosition: 'none', 'title': 'Votes'},
                            axes: { x: {all: {range: {min: 0, max: 50 }}}},
                            width: '80%',
                            //height: '100%'
                         };                
-                        // Instantiate and draw our chart, passing in some options.                
+
+                        // Instantiate and draw our chart, passing in some options.
                         var chart = new google.visualization.BarChart(this.childNodes[1].childNodes[1]);//document.getElementById(pString)); 
                         var viewFinal = new google.visualization.DataView(cData)
-                        viewFinal.setColumns([0,1]);                 
+                        viewFinal.setColumns([0,1]);
+
                         chart.draw(viewFinal, options); 
-                        //document.getElementById('some_frame_id').contentWindow.location.reload();                
+                        //document.getElementById('some_frame_id').contentWindow.location.reload();
+                     //});
                      //});
                   });
-               }     
+               }
             });
 
             
@@ -146,6 +168,12 @@ var MYLIBRARY = MYLIBRARY || (function () {
                   newDiv.setAttribute("poll-key", polljone.id);
                   newDiv.setAttribute("poll-data", JSON.stringify(polljone.pollData));
                newWrap.appendChild(newDiv);
+
+               var showText = document.createElement("span");
+                  showText.id = "show-text";
+                  showText.innerHTML = "Click for Results...";
+                  showText.style = "color";
+               newWrap.appendChild(showText);  
 
                var newChoice = document.createElement("div");
                newChoice.className = ("add-choice");

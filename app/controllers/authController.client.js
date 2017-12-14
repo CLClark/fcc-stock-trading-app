@@ -1,19 +1,48 @@
 'use strict';
 
 var AUTHLIB = AUTHLIB || (function () {
+	var ajaxCb;
+	var _args = {}; // private	 
 	return{
+		init : function(Args) {
+			_args = Args;
+			ajaxCb = _args[0];
+			// some other initialising
+		},
+		navi : function(){
+
+			var homeIcon = document.getElementById('home-icon') || null;
+
+			function makeNaviDiv(){
+
+				var aIcon = document.createElement("a");
+				aIcon.href = "/";		
+				var imgIcon = document.createElement("img");
+				imgIcon.src = "/public/img/vota.png";
+				imgIcon.style = "height: 80px; width: 80px;";
+				aIcon.appendChild(imgIcon);
+				return aIcon;
+			}
+
+			//var naviNode = document.getElementById('navi');
+			if(homeIcon !== null){
+				homeIcon.replaceWith(makeNaviDiv());
+			}
+
+		},
 		authScript : function(){
 
-			var authContainer = document.getElementById('auth-container') || null;
-			var apiUrl = appUrl + '/auth/check';
+			//var naviContainer = document.getElementById('navi') || null;
+			//var authContainer = document.getElementById('auth-container') || null;
+			var apiAuth = appUrl + '/auth/check';
 
 			function makeDiv(){
 				var newSpan2 = document.createElement("span");
-				//newSpan.id ="auth-instance";
+
 				var aPro1 = document.createElement("a");
 				aPro1.className = "menu";
 				aPro1.href = "/profile";
-				aPro1.innerHTML = "Profile";
+				aPro1.innerHTML = "My Polls";
 				var aLog1 = document.createElement("a");
 				aLog1.className = "menu";
 				aLog1.href = "/logout";
@@ -28,7 +57,7 @@ var AUTHLIB = AUTHLIB || (function () {
 
 			function makeDefaultDiv(){
 				var newSpan = document.createElement("span");
-				//newSpan.id ="auth-instance";
+
 				var aPro = document.createElement("a");
 				aPro.href = "/auth/github";		
 				var aLog = document.createElement("div");
@@ -46,46 +75,93 @@ var AUTHLIB = AUTHLIB || (function () {
 				return newSpan;
 			}
 
-			ajaxFunctions.ready(ajaxFunctions.ajaxRequest('GET', apiUrl, false, function (data) {
+			ajaxFunctions.ready(ajaxFunctions.ajaxRequest('GET', apiAuth, false, function (data) {
 				
-				var authObj = JSON.parse(data);
+				var authObj = JSON.parse(data);				
+				var authNode = document.getElementById('auth-container');
 
 				if(authObj.authStatus == true){
-					var randomNode = document.getElementById('auth-container');
-					randomNode.replaceWith(makeDiv());
+					//var randomNode = document.getElementById('auth-container');
+					authNode.replaceWith(makeDiv());
+					addPollDiv();
 				}
 				else if(authObj.authStatus == false){
-					var randomNode2 = document.getElementById('auth-container');
-					if(randomNode2 !== null){
-						randomNode2.replaceWith(makeDefaultDiv());
+					//var randomNode2 = document.getElementById('auth-container');
+					if(authNode !== null){
+						authNode.replaceWith(makeDefaultDiv());
 					}
-				}
+				}				
 
-			})
-			);
+			}));
+
+			function addPollDiv() {		
+				var controlWrap = document.createElement("div");
+				controlWrap.className = "control-btns";
+
+				var newPoll = document.createElement("div");
+				newPoll.className = ("add-poll");
+				var actionPoll = document.createElement('a');
+				var pollBtn = document.createElement('div');
+				pollBtn.className = "btn choice-btn";
+				pollBtn.id = "poll-create";
+				pollBtn.innerHTML = "New Poll";
+				actionPoll.appendChild(pollBtn);
+				newPoll.appendChild(actionPoll);
+				controlWrap.appendChild(newPoll);
+
+				var clickFlag = false;
+				var pollFields;
+				newPoll.addEventListener('click', function () {
+
+					if(clickFlag == false){
+						var pTitle = prompt('Enter poll question:');
+						var choiceArray = [];         
+						pollFields = { title: pTitle, choiceList: []};
+
+						var c1 = prompt('Poll Choice 1:');
+						choiceArray.push(c1);
+						var c2 = prompt('Poll Choice 2:');
+						choiceArray.push(c2);
+
+						pollFields.choiceList = choiceArray;
+						console.log(pollFields);
+
+						document.querySelector('#poll-create').setAttribute('style','background-color: green');
+						document.querySelector('#poll-create').innerHTML = "Create";
+					}
+					else if(clickFlag == true){
+						document.querySelector('#poll-create').setAttribute('style','');
+						document.querySelector('#poll-create').innerHTML = "New Poll";         
+						ajaxFunctions.ajaxRequest('POST', '/polls?q=' + JSON.stringify(pollFields), false, function (error, response) {
+						console.log("Request sent, response received");                
+						document.querySelector('#poll-create').reset();
+						});
+						clickFlag = false;
+						//Window.location.reload(true);         
+					}        
+					clickFlag = true;    
+				}, false);
+
+				var controlPad = document.querySelector('.poll-profile-control') || null;
+				if(controlPad !== null){
+					controlPad.appendChild(controlWrap);
+				}
+			}
 		},
 
 		userScript : function(){
 
-		   var profileId = document.querySelector('#profile-id') || null;
-		   var profileUsername = document.querySelector('#profile-username') || null;
-		   var profileRepos = document.querySelector('#profile-repos') || null;
-		   var displayName = document.querySelector('#display-name');
+			var profileId = document.querySelector('#profile-id') || null;
+			var profileUsername = document.querySelector('#profile-username') || null;			
 
-		   var apiUrl = appUrl + '/api/:id';
+			var apiUser = appUrl + '/api/:id';
 
-		   function updateHtmlElement (dataU, element, userProperty) {
-		      element.innerHTML = dataU[userProperty];
-		   }
+			function updateHtmlElement (dataU, element, userProperty) {
+				element.innerHTML = dataU[userProperty];
+			}
 
-		   ajaxFunctions.ready(ajaxFunctions.ajaxRequest('GET', apiUrl, false, function (dataU) {
+			ajaxFunctions.ready(ajaxFunctions.ajaxRequest('GET', apiUser, false, function (dataU) {
 		         var userObject = JSON.parse(dataU);
-		         
-		         if (userObject.displayName !== null) {
-		            updateHtmlElement(userObject, displayName, 'displayName');
-		         } else {
-		            updateHtmlElement(userObject, displayName, 'username');
-		         }
 
 		         if (profileId !== null) {
 		            updateHtmlElement(userObject, profileId, 'id');   
@@ -93,14 +169,11 @@ var AUTHLIB = AUTHLIB || (function () {
 
 		         if (profileUsername !== null) {
 		            updateHtmlElement(userObject, profileUsername, 'username');   
-		         }
+		         }		         
 
-		         if (profileRepos !== null) {
-		            updateHtmlElement(userObject, profileRepos, 'publicRepos');   
-		         }
+				ajaxCb();
+			}));
 
-		      })
-		   );
 		}
 	}
 })();

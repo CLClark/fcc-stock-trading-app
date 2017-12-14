@@ -21,12 +21,13 @@ body {
 	font-size: 16px;
 	margin: 0;
 	padding: 0;
+	background-color: #EEE;
 }
 
 header {
 	color: #00BCD4;
 	height: 56px;
-	margin: 0 0 14px 0;
+	margin: 14px 0 14px 0;
 	text-align: center;
 }
 
@@ -42,7 +43,7 @@ p {
 /****** Header Styling ******/
 
 header p {
-	margin: 16px 0 5px 0;
+	margin: unset;
 }
 
 .menu {
@@ -75,6 +76,20 @@ header a ~ p {
 	font-weight: 400;
 }
 
+#navi{
+	display: flex;
+	flex-direction: row;
+	justify-content: center;
+	background-color: #EEE;
+}
+
+#welcome-container{
+	padding-left: 14px;
+	display:flex;
+	flex-direction: column;
+	justify-content: center;
+}
+
 /****** Login Styling ******/
 
 .login {
@@ -99,14 +114,13 @@ header a ~ p {
 
 /****** Logo Div Styling ******/
 
-img {
-	margin: 0 auto;
-	display: block;
+img {	
+	display: unset;
 }
 
 .clementine-text { /* Styling for the Clementine.js text */
 	padding: 0;
-	margin: -25px 0 0 0;
+	margin: 0 0 0 0;
 	font-weight: 500;
 	font-size: 60px;
 	color: #FFA000;
@@ -122,7 +136,7 @@ img {
 .btn {	/* Styling for buttons */
 	margin: 5px 10px;
 	color: white;
-	background-color: #00BCD4;
+	background-color: #acacff;
 	display: inline-block;
 	border: 0;
 	font-size: 14px;
@@ -158,7 +172,8 @@ img {
 	width: 100%;
 	height: 100%;
 	border-radius: 3px;
-	margin: 86px auto 0 auto;
+/*	margin: 86px auto 0 auto;*/
+	padding: 10px;
 	background-color: #EEE;
 	text-align: center;
 	color: #000;
@@ -208,8 +223,11 @@ span {
 .poll-wrap-sup{
 	padding:10px 10px 10px 10px;
 	border: grey;
-	border-style: double;
+	border-style: outset;
+	border-width: thick;
 	background-color: white;
+	border-radius: 10px;
+	margin-bottom: 5px;
 }
 
 ul.poll-view-list{
@@ -262,11 +280,22 @@ ul.poll-view-list{
 }
 
 .poll-title{
-	padding: 0 0 10px 0;
+	padding: 0 10px 10px 10px;
+	font-size: x-large;
+	font-weight: bold;
+	color: #FFA000;
 }
 
 .control-btns{
 	display: flex;
 	flex-direction: row;
-	justify-content: center;
+	justify-content: unset;
+}
+
+#show-text{
+	color: #d8d8d8;
+	font-style: italic;
+	font-size: xx-large;
+	width: 100%;
+	text-align: center;
 }
