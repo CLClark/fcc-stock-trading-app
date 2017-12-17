@@ -14,6 +14,7 @@ var MYLIBRARY = MYLIBRARY || (function () {
          function allOrNothing(){
             var apiUrl = _args[0];
             var reqMethod = _args[1];
+            //var cbPostLoops = _args[2]; //uncalled
 
             function getTheJson(apiUrl, cb){
                ajaxFunctions.ready(
@@ -95,9 +96,8 @@ var MYLIBRARY = MYLIBRARY || (function () {
                      //});
                   });
                }
-            });
-
-            
+               //cbPostLoops();
+            });            
             
             function addElement (divName, parent, polljone) {
                var pollCopy = JSON.parse(JSON.stringify(polljone));
@@ -106,13 +106,43 @@ var MYLIBRARY = MYLIBRARY || (function () {
                // create a new div element 
                var newWrapSup = document.createElement("div");
                newWrapSup.className = "poll-wrap-sup";
+
+               /*function social(){ //uncalled
+                  //social container
+                  var socCon = document.createElement('div');
+                  socCon.id = "social-container";
+                  socCon.className = "container";
+                  var socPla = document.createElement('div');
+                  socPla.id = "social-place";
+                  socCon.appendChild(socPla);
+
+                  //social               
+                  var twiAn = document.createElement("a");
+                  twiAn.href = "https://twitter.com/share?ref_src=twsrc%5Etfw";
+                  twiAn.className = "twitter-share-button";
+                  twiAn.setAttribute("data-size", "large");
+                  twiAn.setAttribute("data-hashtags", "votarama");
+                  twiAn.setAttribute("data-show-count", "false");
+                  twiAn.innerHTML = "Tweet";
+                  socPla.appendChild(twiAn);
+                  newWrapSup.appendChild(socCon);
+               };
+
+               if(){
+
+               };*/
+
                var titleDiv = document.createElement("div");
-                  titleDiv.className = "poll-title";
-                  titleDiv.innerHTML = polljone.title;
+                  titleDiv.className = "poll-title";                  
+               var titleA = document.createElement("a"); 
+                  titleA.className = "poll-title";                   
+                  titleA.innerHTML = polljone.title;
+                  titleA.href = ("/polls/view?pid=" + pollCopy["id"]);
+                  titleDiv.appendChild(titleA);               
                   newWrapSup.appendChild(titleDiv);
                var newWrap = document.createElement("div");
                   newWrap.className = "poll-wrap";
-                  newWrapSup.appendChild(newWrap);             
+                  newWrapSup.appendChild(newWrap);
                
                var contDiv = document.createElement("div");
                contDiv.className = "container";
@@ -166,6 +196,7 @@ var MYLIBRARY = MYLIBRARY || (function () {
                   newDiv.className = "poll-view-list-poll";
                   //newDiv.innerHTML = "";
                   newDiv.setAttribute("poll-key", polljone.id);
+                  newDiv.setAttribute("poll-title", polljone.title);
                   newDiv.setAttribute("poll-data", JSON.stringify(polljone.pollData));
                newWrap.appendChild(newDiv);
 
@@ -175,26 +206,18 @@ var MYLIBRARY = MYLIBRARY || (function () {
                   showText.style = "color";
                newWrap.appendChild(showText);  
 
+               //add-choice button
                var newChoice = document.createElement("div");
                newChoice.className = ("add-choice");
                   var actionChoice = document.createElement('a');
                      var choiceBtn = document.createElement('div');
                      choiceBtn.className = "btn choice-btn";
                      choiceBtn.innerHTML = "New Choice";
+                     choiceBtn.pid = pollCopy["id"];
                   actionChoice.appendChild(choiceBtn);
                   newChoice.appendChild(actionChoice);
-               contDiv.appendChild(newChoice);
+               contDiv.appendChild(newChoice);              
 
-               //add a new choice to an existing poll
-               actionChoice.addEventListener('click', function () {
-                  var choiceText = prompt("Type your choice here");
-                  console.log(choiceText);
-                  if(choiceText !== ""){
-                     ajaxFunctions.ajaxRequest('GET', '/polls/votes?choice=' + choiceText + "&" + "pid=" + pollCopy["id"], false, function (error, response) {
-
-                     });
-                  }   
-               }, false);
                //add++i to poll-view ul
                document.getElementById('poll-view').appendChild(newWrapSup);
             } //add element

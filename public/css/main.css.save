@@ -21,7 +21,6 @@ body {
 	font-size: 16px;
 	margin: 0;
 	padding: 0;
-	background-color: #EEE;
 }
 
 header {
@@ -79,15 +78,15 @@ header a ~ p {
 #navi{
 	display: flex;
 	flex-direction: row;
-	justify-content: center;
-	background-color: #EEE;
+	justify-content: center
+	;
 }
 
 #welcome-container{
 	padding-left: 14px;
-	display:flex;
-	flex-direction: column;
 	justify-content: center;
+	display: flex;
+	flex-direction: column;
 }
 
 /****** Login Styling ******/
@@ -115,7 +114,7 @@ header a ~ p {
 /****** Logo Div Styling ******/
 
 img {	
-	display: unset;
+	display: block;
 }
 
 .clementine-text { /* Styling for the Clementine.js text */
@@ -136,7 +135,7 @@ img {
 .btn {	/* Styling for buttons */
 	margin: 5px 10px;
 	color: white;
-	background-color: #acacff;
+	background-color: #00BCD4;
 	display: inline-block;
 	border: 0;
 	font-size: 14px;
@@ -144,7 +143,6 @@ img {
 	padding: 10px 5px;
 	width: 100px;
 	font-weight: 500;
-	cursor:pointer;
 }
 
 .btn:focus {	/* Remove outline when hovering over button */
@@ -173,8 +171,7 @@ img {
 	width: 100%;
 	height: 100%;
 	border-radius: 3px;
-/*	margin: 86px auto 0 auto;*/
-	padding: 10px;
+	margin: 86px auto 0 auto;
 	background-color: #EEE;
 	text-align: center;
 	color: #000;
@@ -224,12 +221,8 @@ span {
 .poll-wrap-sup{
 	padding:10px 10px 10px 10px;
 	border: grey;
-	border-style: outset;
-	border-width: thick;
+	border-style: double;
 	background-color: white;
-	border-radius: 10px;
-	margin-bottom: 5px;
-	position: relative;
 }
 
 ul.poll-view-list{
@@ -252,10 +245,7 @@ ul.poll-view-list{
 
 
 .choice-btn {
-	background-color: lightgrey;
-}
-.add-poll{
-	background-color: #FFA000;
+	background-color: red;
 }
 
 #vote-controls{
@@ -285,28 +275,11 @@ ul.poll-view-list{
 }
 
 .poll-title{
-	padding: 0 10px 10px 10px;
-	font-size: x-large;
-	font-weight: bold;
-	color: #FFA000;
+	padding: 0 0 10px 0;
 }
 
 .control-btns{
 	display: flex;
 	flex-direction: row;
-	justify-content: unset;
-}
-
-#show-text{
-	color: #d8d8d8;
-	font-style: italic;
-	font-size: xx-large;
-	width: 100%;
-	text-align: center;
-}
-
-#social-container{
-	position: absolute;
-	right: 10px;
-	top: 10px;
+	justify-content: center;
 }

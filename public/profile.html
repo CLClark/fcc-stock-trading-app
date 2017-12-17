@@ -11,9 +11,10 @@
 		<script type="text/javascript" src="controllers/authController.client.js"></script>
 		<script type="text/javascript" src="controllers/pollController.client.js"></script>	
 		<script type="text/javascript">
-		   MYLIBRARY.init(["/polls/db", "GET", "controlId"]);
-		   AUTHLIB.init([AUTHLIB.authScript]);//setup ajax callbacck
-		   MYLIBRARY.pollProducer(AUTHLIB.userScript);
+			//setup ajax callbacck
+			AUTHLIB.init([AUTHLIB.authScript,"https://platform.twitter.com/widgets.js",AUTHLIB.loadScript]);
+			MYLIBRARY.init(["/polls/db", "GET", "controlId"]);		   
+			MYLIBRARY.pollProducer(AUTHLIB.userScript);
 		</script>		
 	</head>
 
@@ -40,13 +41,7 @@
 					<div class="poll-profile-control" id="poll-profile-control"></div>
 				</div>
 			</div>
-		</div>
-
-		<div class="container">
-			<div class="poll-placeholder">
-			</div>
-		</div>
-
+		</div>		
 
 		<div class="container">
 			<div class="github-profile poll-profile" id="poll-profile">
@@ -64,7 +59,8 @@
 	<footer>
 		<script type="text/javascript">
 			AUTHLIB.navi();   
-		</script>		
+		</script>
+		<script async src="https://platform.twitter.com/widgets.js" charset="utf-8"></script>		
 	</footer>
 
 </html>
