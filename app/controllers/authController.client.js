@@ -99,9 +99,11 @@ var AUTHLIB = AUTHLIB || (function () {
 					addPollDiv(); 
 					addChoiceListener(); //choice script
 					addDeleteDiv();
-					addSocialDiv(); //tweet button (share)					
-					authScriptCB(); //tweet script
-					
+					//prevent loading tweet api on home page (large poll count)					
+					if(location.pathname !== "/"){
+						addSocialDiv(); //tweet button (share)					
+						authScriptCB(); //tweet script	
+					}					
 				}
 				else if(authObj.authStatus == false){
 					//var randomNode2 = document.getElementById('auth-container');
@@ -156,8 +158,11 @@ var AUTHLIB = AUTHLIB || (function () {
 						var titleS = this.title;
 						 var confirmDel = confirm("Delete Poll: " + titleS + "?");                     
 						 if(confirmDel == true){
-						    ajaxFunctions.ajaxRequest('DELETE', '/polls/db?pid=' + keyS, false, function (error, response) {
+						 	window.addEventListener("unload", function(){
+							    ajaxFunctions.ajaxRequest('DELETE', '/polls/db?pid=' + keyS, false, function (error, response) {						    	
+							    });
 						    });
+						    window.location.reload(true);
 						 }   
 					}, false);
 				}
@@ -190,7 +195,7 @@ var AUTHLIB = AUTHLIB || (function () {
 				}
 			}
 
-			function addPollDiv() {		
+			function addPollDiv() {
 				var controlWrap = document.createElement("div");
 				controlWrap.className = "control-btns";
 
@@ -222,6 +227,17 @@ var AUTHLIB = AUTHLIB || (function () {
 						pollFields.choiceList = choiceArray;
 						console.log(pollFields);
 
+						//update HTML with poll data
+						// "poll-profile-control" > "control-btns"
+						var previewList = document.createElement("ul");
+						var previewLi = document.createElement("li");
+						
+						previewLi.innerHTML = c1;
+
+						previewList.appendChild(previewLi);
+						
+
+
 						document.querySelector('#poll-create').setAttribute('style','background-color: green');
 						document.querySelector('#poll-create').innerHTML = "Create";
 					}
@@ -229,11 +245,11 @@ var AUTHLIB = AUTHLIB || (function () {
 						document.querySelector('#poll-create').setAttribute('style','');
 						document.querySelector('#poll-create').innerHTML = "New Poll";         
 						ajaxFunctions.ajaxRequest('POST', '/polls?q=' + JSON.stringify(pollFields), false, function (error, response) {
-						console.log("Request sent, response received");                
-						document.querySelector('#poll-create').reset();
+							console.log("Request sent, response received");                
+							window.location.reload(true);	
 						});
 						clickFlag = false;
-						//Window.location.reload(true);         
+						
 					}        
 					clickFlag = true;    
 				}, false);

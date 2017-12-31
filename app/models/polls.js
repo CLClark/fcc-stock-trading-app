@@ -22,7 +22,8 @@ var Polls = new Schema({
 	},
    choiceList: [Choices],
    active: Boolean,
-   title: String
+   title: String,
+   date: String
 });
 
 module.exports = mongoose.model('Polls', Polls);

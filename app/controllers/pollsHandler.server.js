@@ -2,7 +2,7 @@
 
 var Polls = require('../models/polls.js');
 var Users = require('../models/users.js');
-var mongoose = require('../models/users.js');
+var mongoose = require('mongoose');
 
 function PollsHandler () {
 
@@ -11,8 +11,8 @@ function PollsHandler () {
 		Users
 			.findOne({ 'github.id': req.user.github.id }, { '_id': false })
 			.exec(function (err, result) {
-				if (err) { throw err; }		
-				res.json(result.pollsOwned);
+				if (err) { throw err; }				
+				res.json(result.pollsOwned);				
 			});
 	};
 
@@ -21,26 +21,45 @@ function PollsHandler () {
 	this.getPolls = function (req, res) {
 		console.log('handler.server.js.getPolls');
 		Polls
-		.find({ $and: [{ "github.id": req.user.github.id}, {'active': { $eq: true } } ]}, function (err, result) {
+		.find({ $and: [{ "github.id": req.user.github.id}, {'active': { $eq: true } } ]}, null, { sort: {date: -1}}, function (err, result) {
 			if (err) { throw err; }
 			var toSend = pollBuilder(result);
 			console.log('handler.server.js.getPolls ' + result.length);				
 			res.send(JSON.stringify(toSend));				
 		});
 	}
+	
+	//find a single poll in the db
+	this.singlePoll = function (req, res, next) {
 
-	this.singlePoll = function (req, res) {
-		var mongoose = require('mongoose');
 		console.log('handler.server.js.singlePoll');
-		var pollKey = mongoose.Types.ObjectId(req.query.pid);		
-		Polls
-		.find({ $and: [{ "_id": pollKey}, {'active': { $eq: true } } ]}, function (err, result) {
-			if (err) { throw err; }
-			var singleResult = pollBuilder(result);
-			res.send(JSON.stringify(singleResult));
-		});
+
+		var ObjectId = require('mongoose').Types.ObjectId;
+    	var idCheck = ObjectId.isValid(req.query.pid);
+		
+		if(idCheck){
+			var pollKey = new mongoose.Types.ObjectId(req.query.pid);
+			Polls
+			.find({ $and: [{ "_id": pollKey}, {'active': { $eq: true } } ]}, function (err, result) {
+				if (err) { throw err; }
+				if(result.length > 0){
+					var singleResult = pollBuilder(result);
+					res.send(JSON.stringify(singleResult));	
+				}
+				else{				
+					console.log("poll query failed");
+					res.location('/');			
+					res.sendStatus(404);
+				}
+			});	
+		}else{
+			console.log("id fails");
+			res.location('/');			
+			res.sendStatus(404);
+		}		
 	};
 
+	//find all active polls (for votarama home page)
 	this.allPolls = function (req, res) {
 		Polls
 		.find({'active': true}, function (err, result){			
@@ -54,7 +73,7 @@ function PollsHandler () {
 				var pollId = result[i]._id || "";
 				// iterThrough.push(pollTitle);
 				var cList = result[i].choiceList || [];
-				console.log(JSON.stringify(cList));
+				// console.log(JSON.stringify(cList));
 				for( var l = 0; l < cList.length; l++){
 					var iterThrough = [];
 					var choiceName = cList[l].choice || "";
@@ -127,24 +146,49 @@ function PollsHandler () {
 		singlePoll.title = queryObj.title;
 		singlePoll.active = true;
 		singlePoll.github = req.user.github;
+		singlePoll.date = Date.now().toString();
 		singlePoll.save();		
 		console.log(JSON.stringify(singlePoll));
+		res.sendStatus(200);
 	}
 
 	this.deletePoll = function (req, res) {
-		console.log('deletePoll callback');		
+		// var mongoose = require('mongoose');				
 		var pollToDel = req.query.pid;
-		Polls.findByIdAndUpdate(pollToDel, { $set: { active: false }},{lean: false}, function (err, result){			
-			if(err) {throw err;}
-			console.log(req.query.pid);
-			// if(req.user.github.id == result.owner){
-				//result.active = false;
-				//result.save;
-			console.log(result);
-				//res.json(result);										
-			// }
-		});		
-	}
+		var pollKey = mongoose.Types.ObjectId(pollToDel);
+		var adminObject = {};		
+		if(req.user.github.id == '16168260'){									
+		}
+		else{
+			var field = req.user.github.id;
+			adminObject['github.id'] = field;
+		}
+		Polls
+		.find({ $and: [{ "_id": pollKey}, adminObject, {'active': { $eq: true } } ]}, function (err, result) {
+			console.log(req.user.github.id);
+			if(result.length > 0){
+				console.log('deletePoll callback' + JSON.stringify(result));
+				if (err) { res.sendStatus(404); }
+				var userId = req.user.github.id;
+				// console.log(result);
+				console.log(result[0]);
+				var pollOwner = result[0].github.id;			
+				if(userId == pollOwner || userId == '16168260'){
+					Polls.findByIdAndUpdate(pollToDel, { $set: { active: false }},{lean: false}, function (err, dResult){			
+						if(err) {throw err;}
+						console.log(req.query.pid + "found and deleted");			
+						res.sendStatus(200);			
+					});		
+				}			
+				else{
+					res.sendStatus(403);
+				}						
+			}
+			else{
+				res.sendStatus(403);
+			}			
+		});	
+	}//this.deletePoll
 
 	this.removeChoice = function (req, res) {
 		console.log('removeChoice callback');
@@ -158,16 +202,19 @@ function PollsHandler () {
 		Polls
 		.findById(pollToFind, {lean: false}, function (err, result){			
 			if(err) {throw err;}
-
-			var choicesArray = result.choiceList;
-			var choiceToPush = {choice: choiceString, owner: origin, votes: []};
-			choicesArray.push(choiceToPush);
-			
-			console.log("saved: " + result.save());
-
+			//check if poll is active in the db
+			if(result.active == true){
+				var choicesArray = result.choiceList;
+				var choiceToPush = {choice: choiceString, owner: origin, votes: []};
+				choicesArray.push(choiceToPush);			
+				console.log("saved: " + result.save());
+				res.send(JSON.stringify(result));
+			}
+			else{
+				res.status(403);
+				res.json({poll: "not found"});
+			}
 		});
-
-
 		console.log('addChoice callback');
 	}
 
@@ -177,38 +224,44 @@ function PollsHandler () {
 		var pollToFind = req.query.pid;
 		var choiceToAdd = req.query.cid;
 		var origin = req.ip;
-
 		
 		Polls
 		.findById(pollToFind, {lean: false}, function (err, result){			
 			if(err) {throw err;}
-			var choicesArray = result.choiceList;
-			var combinator = []; //combine IPs to check against
-			for (var i = choicesArray.length - 1; i >= 0; i--) {
-				combinator = combinator.concat(choicesArray[i].votes);
-			};
+			//check if poll is active
+			if(result.active == true){
+				var choicesArray = result.choiceList;
+				var combinator = []; 
+				//combine IPs to check against
+				for (var i = choicesArray.length - 1; i >= 0; i--) {
+					combinator = combinator.concat(choicesArray[i].votes);
+				};
 
-			var flagIp = false;
-			combinator.forEach(function (vObj, index, combArray){				
-				if(vObj.ip == origin) {					
-					flagIp = true;					
-					return;
+				//check if vote exists for user's ip address
+				var flagIp = false;
+				combinator.forEach(function (vObj, index, combArray){				
+					if(vObj.ip == origin) {					
+						flagIp = true;					
+						return;
+					}
+				});
+				//if request passes the ip test, record vote
+				if(flagIp == false){
+					var whereToPush = choicesArray.id(choiceToAdd);
+					var whenToPush = new Date().getTime();
+					//console.log(whereToPush);
+					var voteToPush = {ip: origin, date: whenToPush};
+					var resultPush = whereToPush.votes.push(voteToPush);
+					//console.log(resultPush);
+					result.save();
+					console.log("found " + resultPush);
+					res.send(JSON.stringify(result));
 				}
-			});
-
-			if(flagIp == false){
-				var whereToPush = choicesArray.id(choiceToAdd);
-				var whenToPush = new Date().getTime();
-				//console.log(whereToPush);
-				var voteToPush = {ip: origin, date: whenToPush};
-				var resultPush = whereToPush.votes.push(voteToPush);
-				//console.log(resultPush);
-				result.save();
-				console.log("found " + resultPush);
-			}
-			else if(flagIp == true){
-				res.json({voteStatus: "already-voted"});
-			}
+				else if(flagIp == true){
+					res.status(403);
+					res.json({voteStatus: "already-voted"});
+				}
+			}			
 		});
 	}
 

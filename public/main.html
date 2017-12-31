@@ -14,8 +14,8 @@
 	<script type="text/javascript" src="controllers/authController.client.js"></script>
 	<script type="text/javascript" src="controllers/pollController.client.js"></script>
 	<script type="text/javascript">
-		AUTHLIB.init([null,"https://platform.twitter.com/widgets.js", AUTHLIB.loadScript]);
-		MYLIBRARY.init(['/polls', "GET", AUTHLIB.loadScript]);
+		/*		AUTHLIB.init([null,"https://platform.twitter.com/widgets.js", null]); 		*/
+		MYLIBRARY.init(['/polls', "GET", null]);
 		MYLIBRARY.pollProducer(AUTHLIB.authScript);
 	</script>
 
