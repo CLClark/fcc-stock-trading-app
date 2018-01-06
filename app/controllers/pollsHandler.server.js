@@ -249,6 +249,8 @@ function PollsHandler () {
 		var pollToFind = req.query.pid.substring(0,40);
 		var choiceToAdd = req.query.cid.substring(0,140);
 		var origin = req.ip.substring(0,100);
+		console.log(req.ip.substring(0,100)+ " : IP ORIGIN ******************");
+		
 		
 		Polls
 		.findById(pollToFind, {lean: false}, function (err, result){			
