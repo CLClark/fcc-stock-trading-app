@@ -8,12 +8,20 @@ function PollsHandler () {
 
 	//search data for user profile + polls
 	this.myPolls = function (req, res) {
-		Users
-			.findOne({ 'github.id': req.user.github.id }, { '_id': false })
-			.exec(function (err, result) {
-				if (err) { throw err; }				
-				res.json(result.pollsOwned);				
-			});
+//		Users
+//			.findOne({ 'github.id': req.user.github.id }, { '_id': false })
+//			.exec(function (err, result) {				
+				Polls
+				.find({ $and: [{ "github.id": req.user.github.id.substring(0,10)}, {'active': { $eq: true } } ]}, null, { sort: {date: -1}}, function (err, result2) {
+					if (err) { throw err; }
+					//add aggregate poll query data to user object
+					var analyze = pollBuilder(result2, true);
+					var newUserObj = JSON.parse(JSON.stringify(req.user.github.substring(0,10)));
+					newUserObj["totalVotes"] = analyze["totalVotes"];
+					newUserObj["uniqueVoters"] = analyze["uniqueVoters"];
+					res.json(newUserObj);				
+				});		
+//			});
 	};
 
 	//search DB for poll data that user owns
@@ -21,7 +29,7 @@ function PollsHandler () {
 	this.getPolls = function (req, res) {
 		console.log('handler.server.js.getPolls');
 		Polls
-		.find({ $and: [{ "github.id": req.user.github.id}, {'active': { $eq: true } } ]}, null, { sort: {date: -1}}, function (err, result) {
+		.find({ $and: [{ "github.id": req.user.github.id.substring(0,10)}, {'active': { $eq: true } } ]}, null, { sort: {date: -1}}, function (err, result) {
 			if (err) { throw err; }
 			var toSend = pollBuilder(result);
 			console.log('handler.server.js.getPolls ' + result.length);				
@@ -35,10 +43,11 @@ function PollsHandler () {
 		console.log('handler.server.js.singlePoll');
 
 		var ObjectId = require('mongoose').Types.ObjectId;
-    	var idCheck = ObjectId.isValid(req.query.pid);
+		var pollId = req.query.pid.substring(0,10) || "";
+		var idCheck = ObjectId.isValid(pollId);
 		
 		if(idCheck){
-			var pollKey = new mongoose.Types.ObjectId(req.query.pid);
+			var pollKey = new mongoose.Types.ObjectId(pollId);
 			Polls
 			.find({ $and: [{ "_id": pollKey}, {'active': { $eq: true } } ]}, function (err, result) {
 				if (err) { throw err; }
@@ -98,9 +107,11 @@ function PollsHandler () {
 		});
 	}
 
-	function pollBuilder(result){
+	function pollBuilder(result, options){
 		var aggregator = [];		
 		var currentPoll = ""; var currentPIndex = -1;
+		var totalVotes = 0;
+		var vRay = [];
 		for( var i = 0; i < result.length; i++){
 			var chartsForm = [
 				['Choice', 'Votes', 'cid']
@@ -108,7 +119,7 @@ function PollsHandler () {
 			var pollId = result[i]._id || "";
 			// iterThrough.push(pollTitle);
 			var cList = result[i].choiceList || [];
-			console.log(JSON.stringify(cList));
+//			console.log(JSON.stringify(cList));
 			for( var l = 0; l < cList.length; l++){
 				var iterThrough = [];
 				var choiceName = cList[l].choice || "";
@@ -117,13 +128,29 @@ function PollsHandler () {
 				iterThrough.push(choiceName);
 				iterThrough.push(voteNum);
 				iterThrough.push(cidToAdd);
-				chartsForm.push(iterThrough);					
+				chartsForm.push(iterThrough);
+				//aggregation for users 
+				totalVotes += voteNum;
+				if(options){
+					var ipArr = cList[l].votes || [];
+					for(var vips = 0; vips < ipArr.length; vips++){
+						var vipString = ipArr[vips].ip;
+						if(vRay.indexOf(vipString) < 0){
+							console.log(vipString);
+							vRay.push(vipString);
+						}
+					}
+				}
 			}
 			if(currentPoll !== pollId){
 				currentPoll = pollId;
 				aggregator.push({id: pollId, title: result[i].title, pollData: chartsForm});
 				currentPIndex++;
 			}
+		}
+		if(options){
+			var userResults = {"totalVotes": totalVotes, "uniqueVoters": vRay.length};
+			return userResults;
 		}
 		return aggregator;
 	}
@@ -138,14 +165,14 @@ function PollsHandler () {
 
 		console.log(queryObj);		
 		for (var i = choiceQArr.length - 1; i >= 0; i--) {						
-			choicesObj.owner = req.user.github.id;
+			choicesObj.owner = req.user.github.id.substring(0,10);
 			choicesObj.choice = choiceQArr[i];
 			singlePoll.choiceList.push(choicesObj);
 		};
 		
 		singlePoll.title = queryObj.title;
 		singlePoll.active = true;
-		singlePoll.github = req.user.github;
+		singlePoll.github = req.user.github.substring(0,10);
 		singlePoll.date = Date.now().toString();
 		singlePoll.save();		
 		console.log(JSON.stringify(singlePoll));
@@ -160,23 +187,23 @@ function PollsHandler () {
 		if(req.user.github.id == '16168260'){									
 		}
 		else{
-			var field = req.user.github.id;
+			var field = req.user.github.id.substring(0,10);
 			adminObject['github.id'] = field;
 		}
 		Polls
 		.find({ $and: [{ "_id": pollKey}, adminObject, {'active': { $eq: true } } ]}, function (err, result) {
-			console.log(req.user.github.id);
+			console.log(req.user.github.id.substring(0,10));
 			if(result.length > 0){
 				console.log('deletePoll callback' + JSON.stringify(result));
 				if (err) { res.sendStatus(404); }
-				var userId = req.user.github.id;
+				var userId = req.user.github.id.substring(0,10);
 				// console.log(result);
 				console.log(result[0]);
 				var pollOwner = result[0].github.id;			
 				if(userId == pollOwner || userId == '16168260'){
 					Polls.findByIdAndUpdate(pollToDel, { $set: { active: false }},{lean: false}, function (err, dResult){			
 						if(err) {throw err;}
-						console.log(req.query.pid + "found and deleted");			
+						console.log(req.query.pid.substring(0,10) + "found and deleted");			
 						res.sendStatus(200);			
 					});		
 				}			
@@ -195,9 +222,9 @@ function PollsHandler () {
 	}
 
 	this.addChoice = function (req, res) {
-		var choiceString = req.query.choice;
-		var pollToFind = req.query.pid;
-		var origin = req.ip;
+		var choiceString = req.query.choice.substring(0,140);
+		var pollToFind = req.query.pid.substring(0,30);
+		var origin = req.ip.substring(0,140); //arbitrary cut off
 
 		Polls
 		.findById(pollToFind, {lean: false}, function (err, result){			
@@ -219,11 +246,11 @@ function PollsHandler () {
 	}
 
 	this.addVote = function (req, res) {
-		console.log('addVote callback' + req.ip);
+		console.log('addVote callback' + req.ip.substring(0,100));
 		//check if previously voted (ip or id)
-		var pollToFind = req.query.pid;
-		var choiceToAdd = req.query.cid;
-		var origin = req.ip;
+		var pollToFind = req.query.pid.substring(0,40);
+		var choiceToAdd = req.query.cid.substring(0,140);
+		var origin = req.ip.substring(0,100);
 		
 		Polls
 		.findById(pollToFind, {lean: false}, function (err, result){			
@@ -255,7 +282,32 @@ function PollsHandler () {
 					//console.log(resultPush);
 					result.save();
 					console.log("found " + resultPush);
-					res.send(JSON.stringify(result));
+					
+					//respond with updated poll					
+					var ObjectId = require('mongoose').Types.ObjectId;
+					var pollId = pollToFind || "";
+					var idCheck = ObjectId.isValid(pollId);
+					
+					if(idCheck){
+						var pollKey = new mongoose.Types.ObjectId(pollId);
+						Polls
+						.find({ $and: [{ "_id": pollKey}, {'active': { $eq: true } } ]}, function (err, result) {
+							if (err) { throw err; }
+							if(result.length > 0){
+								var singleResult = pollBuilder(result);
+								res.send(JSON.stringify(singleResult));	
+							}
+							else{				
+								console.log("poll query failed");
+								res.location('/');			
+								res.sendStatus(404);
+							}
+						});	
+					}else{
+						console.log("id fails");
+						res.location('/');			
+						res.sendStatus(404);
+					}
 				}
 				else if(flagIp == true){
 					res.status(403);
@@ -264,33 +316,6 @@ function PollsHandler () {
 			}			
 		});
 	}
-
-
-
-
-	/*
-	this.addVote = function (req, res) {
-		Users
-			.findOneAndUpdate({ 'github.id': req.user.github.id }, { $inc: { 'nbrClicks.clicks': 1 } })
-			.exec(function (err, result) {
-					if (err) { throw err; }
-
-					res.json(result.nbrClicks);
-				}
-			);
-	};
-
-	this.resetClicks = function (req, res) {
-		Users
-			.findOneAndUpdate({ 'github.id': req.user.github.id }, { 'nbrClicks.clicks': 0 })
-			.exec(function (err, result) {
-					if (err) { throw err; }
-
-					res.json(result.nbrClicks);
-				}
-			);
-	};
-	*/
 }
 
 module.exports = PollsHandler;

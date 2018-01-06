@@ -6,8 +6,7 @@
 	<title>VOTA-RAMA: To Vote or Not to Vote?</title>
 
 	<link href="/public/css/main.css" rel="stylesheet" type="text/css">
-
-	<!--Load the AJAX API-->
+		<!--Load the AJAX API-->
 	<script type="text/javascript" src="../common/ajax-functions.js"></script>	
 	<script type="text/javascript" src="https://www.gstatic.com/charts/loader.js"></script>
 	<!-- -->
@@ -15,7 +14,7 @@
 	<script type="text/javascript" src="../controllers/pollController.client.js"></script>
 	<script type="text/javascript">
 		AUTHLIB.init([null,"https://platform.twitter.com/widgets.js", AUTHLIB.loadScript]);
-		MYLIBRARY.init([window.location.pathname + window.location.search, "POST", AUTHLIB.loadScript]);
+		MYLIBRARY.init([window.location.pathname + window.location.search, "POST", "uncalled"]);
 		MYLIBRARY.pollProducer(AUTHLIB.authScript);   	   		
 	</script>
 

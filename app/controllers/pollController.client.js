@@ -19,22 +19,10 @@ var MYLIBRARY = MYLIBRARY || (function () {
             function getTheJson(apiUrl, cb){
                ajaxFunctions.ready(
                   ajaxFunctions.ajaxRequest(reqMethod, apiUrl, true, function(data){
-                     //check server response
-                     // if(data.readyState == 4){                         
-                        // if(data.status == 303){
-                           // window.location.replace("../..");
-                        // }
-                        // else{
                            cb(data);
-                           //add another ajax call here
-                           passedInFunction();   
-                        // }                     
-                     // }
                   })
                ); 
             }
-
-
 
             getTheJson(apiUrl, function(jsonResponse){
 
@@ -61,37 +49,49 @@ var MYLIBRARY = MYLIBRARY || (function () {
                   var pId = ("poll-").concat(i);
                   var jone = jsonData[i];
                   var pString = pId;
-                  document.getElementById(pString).parentNode.parentNode.addEventListener('click', function(element){
-                  
-                     this.childNodes[1].childNodes[2].style.display = "none"; //hide the "show results" text
-              
-                        var jArray = JSON.parse(this.childNodes[1].childNodes[1].getAttribute("poll-data"));                                        
-                        var cData = new google.visualization.arrayToDataTable(jArray);
-                       
-                        var chartOptions = {
-                           colors: ['#212dcd'],
-                           bars: 'horizontal',
-                           bar: {
-                              "groupWidth": '50px'
-                           },
-                           //forceIFrame: true,
-                           chartArea: { left: 0, top: 0, height: '99%' },
-                           vAxis: { textPosition: 'none'},
-                           hAxis: { textPosition: 'none', 'title': 'Votes'},
-                           axes: { x: {all: {range: {min: 0, max: 50 }}}},
-                           width: '80%',
-                           //height: '100%'
-                        };
-                        // Instantiate and draw our chart, passing in some options.
-                        var chart = new google.visualization.BarChart(this.childNodes[1].childNodes[1]);//document.getElementById(pString)); 
-                        var viewFinal = new google.visualization.DataView(cData)
-                        viewFinal.setColumns([0,1]);
-
-                        chart.draw(viewFinal, chartOptions); 
-                  });
+//                  document.getElementById(pString).parentNode.parentNode.addEventListener('click', function(element){
+                  var that =document.getElementById(pString).parentNode.querySelector('#show-text'); 
+                  that.addEventListener('click', showChart.bind(null, that));                  
                }
+               passedInFunction();   
                //cbPostLoops();
-            });            
+            });
+            
+            function showChart(arg){ 
+          	  arg.style.display = "none"; //hide the "show results" text
+
+          	  var jArray = JSON.parse(arg.parentNode.childNodes[1].getAttribute("poll-data"));          
+          	  var cData = new google.visualization.arrayToDataTable(jArray);
+
+          	  var chartOptions = {
+	          	  colors: ['#212dcd'],
+	          	  bars: 'horizontal',
+	          	  bar: {
+	          		  "groupWidth": '50px'
+	          	  },	          	  
+	          	  chartArea: { left: 0, top: 0, height: '99%' },
+	          	  vAxis: { textPosition: 'none'},
+	          	  hAxis: { textPosition: 'none', 'title': 'Votes'},
+	          	  axes: { x: {all: {range: {min: 0, max: 50 }}}},
+	          	  width: '80%',
+          	  };
+          	  // Instantiate and draw our chart, passing in some options.
+          	  var chart = new google.visualization.BarChart(arg.parentNode.childNodes[1]);
+          	  var viewFinal = new google.visualization.DataView(cData)
+          	  viewFinal.setColumns([0,1,{
+          		  calc: "stringify",
+          		  sourceColumn: 1,
+          		  type: "string",
+          		  role: "annotation"
+          	  	}
+          	  ]);
+          	  chart.draw(viewFinal, chartOptions);
+          	  
+          	  window.addEventListener("resize", function(){
+          		  chart.draw(viewFinal, chartOptions);
+          		  console.log("resized");          		  
+        	        }.bind(arg));
+            }
             
             function addElement (divName, parent, polljone, options) {
                var pollCopy = JSON.parse(JSON.stringify(polljone));
@@ -100,6 +100,7 @@ var MYLIBRARY = MYLIBRARY || (function () {
                // create a new div element 
                var newWrapSup = document.createElement("div");
                newWrapSup.className = "poll-wrap-sup";
+               newWrapSup.id = ("poll-wrap-sup-"+ pollCopy["id"]);
 
                var titleDiv = document.createElement("div");
                   titleDiv.className = "poll-title";                  
@@ -133,6 +134,7 @@ var MYLIBRARY = MYLIBRARY || (function () {
                      var voteLink = "/polls/votes?" + "pid=" + pollCopy["id"] + "&" + "cid=" + cid;
                      //actionDiv.className = "vote-btn";                
                      actionDiv.id = voteLink;
+                     actionDiv.setAttribute("poll-key", pollCopy["id"]);
                            //actual button
                            var btnDiv = document.createElement("div");
                            btnDiv.className = "btn vote-btn";
@@ -152,10 +154,17 @@ var MYLIBRARY = MYLIBRARY || (function () {
                   }
                   //vote ajax call
                   actionDiv.addEventListener('click', function () {
-                     ajaxFunctions.ajaxRequest('POST', this.id, false, function (error, response) {
-                        //RECREATE THE POLL DIV with response object
-                        var newSing = JSON.parse(response);                        
-                        addElement(pollCopy["id"], null, newSing[0], null);
+          	        var existNodeId = this.getAttribute("poll-key");
+                     ajaxFunctions.ajaxRequest('POST', this.id, false, function (response) {
+                    	//RECREATE THE POLL DIV with response object
+                    	 var responseArray = JSON.parse(response);                    	 
+                    	 if(responseArray.length > 0){
+                    		 window.location.reload(true);                    		 
+                    		 //unimplemented: redraw and update chart             	    
+                    	 }
+                    	 else if(responseArray.voteStatus == "already-voted"){
+                    		 var noVote = alert("You've already voted on this poll");
+                    	 }
                      });   
                   }, false);
                };
@@ -188,8 +197,14 @@ var MYLIBRARY = MYLIBRARY || (function () {
                   newChoice.appendChild(actionChoice);
                contDiv.appendChild(newChoice);              
 
-               //add++i to poll-view ul
-               document.getElementById('poll-view').appendChild(newWrapSup);
+	     //add++i to poll-view ul               
+               if(options == null){
+          	     document.getElementById('poll-view').appendChild(newWrapSup);     
+               }else{               //options variant (replace existing node)?          	     
+          	     var oldNode = document.getElementById("poll-wrap-sup-"+ options);          	     
+          	     var pareNode = oldNode.parentNode;
+          	     pareNode.replaceChild(newWrapSup, oldNode);
+               }
             } //add element
          } //all or nothing          
       } //poll producer

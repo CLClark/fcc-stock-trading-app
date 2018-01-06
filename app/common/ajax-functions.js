@@ -17,8 +17,12 @@ var ajaxFunctions = {
       var xmlhttp = new XMLHttpRequest();
 
       xmlhttp.onreadystatechange = function () {
-         if (xmlhttp.readyState === 4 && xmlhttp.status === 200) {
+         if (xmlhttp.readyState === 4 && xmlhttp.status === 200) {	         
             callback(xmlhttp.response);
+         }
+         else if(xmlhttp.readyState === 4 && xmlhttp.status === 403){
+	         //error callback
+	         callback(xmlhttp.response);
          }
       };
 

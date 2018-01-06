@@ -34,15 +34,6 @@ module.exports = function (app, passport) {
 		.get(function (req, res){
 			res.sendFile(path + '/public/main_unauth.html')
 		});
-/*
-//	app.route('/:fileReq')
-//		.get(function (req, res){
-//			res.sendFile(path + '/app/routes/index.js');
-//		});
-//			res.sendFile(path + '/app/controllers/' + req.params.fileReq);
-//			res.redirect('/');
-//		});	
-*/
 
 	app.route('/')
 		.get(function (req, res) {
@@ -72,8 +63,9 @@ module.exports = function (app, passport) {
 		});
 
 	app.route('/api/:id')
-		.get(isLoggedIn, function (req, res) {			
-			res.json(req.user.github);
+		.get(isLoggedIn, function (req, res) {
+			pollsHandler.myPolls(req, res);
+//			res.json(req.user.github);
 		});
 
 	app.route('/auth/github')

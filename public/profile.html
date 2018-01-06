@@ -2,21 +2,21 @@
 
 <html>
 
-	<head>
-		<title>Vota-Rama! Profile</title>
-		
-		<link href="/public/css/main.css" rel="stylesheet" type="text/css">
-		<script type="text/javascript" src="common/ajax-functions.js"></script>		
-		<script type="text/javascript" src="https://www.gstatic.com/charts/loader.js"></script>
-		<script type="text/javascript" src="controllers/authController.client.js"></script>
-		<script type="text/javascript" src="controllers/pollController.client.js"></script>	
-		<script type="text/javascript">
-			//setup ajax callbacck
-			AUTHLIB.init([AUTHLIB.authScript,"https://platform.twitter.com/widgets.js",AUTHLIB.loadScript]);
-			MYLIBRARY.init(["/polls/db", "GET", "controlId"]);		   
-			MYLIBRARY.pollProducer(AUTHLIB.userScript);
-		</script>		
-	</head>
+<head>
+	<title>Vota-Rama! Profile</title>
+	
+	<link href="/public/css/main.css" rel="stylesheet" type="text/css">
+	<script type="text/javascript" src="common/ajax-functions.js"></script>		
+	<script type="text/javascript" src="https://www.gstatic.com/charts/loader.js"></script>
+	<script type="text/javascript" src="controllers/authController.client.js"></script>
+	<script type="text/javascript" src="controllers/pollController.client.js"></script>	
+	<script type="text/javascript">
+		//setup ajax callbacck
+		AUTHLIB.init([AUTHLIB.authScript,"https://platform.twitter.com/widgets.js",AUTHLIB.loadScript]);
+		MYLIBRARY.init(["/polls/db", "GET", ""]);		   
+		MYLIBRARY.pollProducer(AUTHLIB.userScript);
+	</script>		
+</head>
 
 <header>
 	<div id="navi" class="navi-menu">
@@ -36,8 +36,13 @@
 				<div class="github-profile-interface">
 					<!--<img src="/public/img/gh-mark-32px.png" alt="github logo" />-->
 					<p><span>ID: </span><span id="profile-id" class="profile-value"></span></p>
-					<p><span>Username: </span><span id="profile-username" class="profile-value"></span></p>					
-					<p><span>Active Polls: </span><span id="active-poll-count" class="profile-value"></span></p>
+					<p><span>Username: </span><span id="profile-username" class="profile-value"></span></p>
+					<br>	
+					<p><span>Aggregate Data</span></p>		
+					<p><span>Active Polls: </span><span id="active-poll-count" class="profile-value"></span></p>			
+					<p><span>Votes cast on my polls: </span><span id="votes-count" class="profile-value"></span></p>
+					<p><span>Unique Voters: </span><span id="voters-count" class="profile-value"></span></p>
+					<br>
 					<div class="poll-profile-control" id="poll-profile-control"></div>
 				</div>
 			</div>

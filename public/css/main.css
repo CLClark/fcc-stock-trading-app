@@ -184,7 +184,7 @@ img {
 	padding-top: 16px;
 }
 
-.github-profile p:nth-child(5) {
+.github-profile p:nth-child(10) {
 	margin-bottom: 16px
 }
 
@@ -240,6 +240,8 @@ ul.poll-view-list{
 
 .poll-view-list-poll{
 	margin: 0 0 50px 0;
+	width: 100%;
+	overflow: hidden;
 	/*flex: 0 0 70%;
 	padding: 0 10% 0 0;
 	*/
@@ -267,9 +269,18 @@ ul.poll-view-list{
 	height: 50px;
 }
 
-.vote-btn, .add-choice, .choice-btn{	
+.vote-btn, .add-choice, .choice-btn, .dummy-btn, .delete-btn{	
 	white-space: nowrap;	
 	width: 120px;
+	text-align: center;
+}
+
+.delete-btn{
+	background-color: red;
+}
+
+.delete-poll{
+	text-align: left;
 }
 
 .vote-btn:hover, .choice-btn:hover{
@@ -284,6 +295,22 @@ ul.poll-view-list{
 	
 }
 
+#poll-profile-control{
+	display: flex;
+	flex-direction: row;	
+}
+
+#dummy{
+	width: 50%;
+	flex-direction: column;
+	display: none;
+}
+
+.dummy-btn{
+	flex-grow: 1;
+	width: unset;
+}
+
 .poll-title{
 	padding: 0 10px 10px 10px;
 	font-size: x-large;
@@ -293,7 +320,7 @@ ul.poll-view-list{
 
 .control-btns{
 	display: flex;
-	flex-direction: row;
+	flex-direction: column;
 	justify-content: unset;
 }
 
@@ -303,6 +330,7 @@ ul.poll-view-list{
 	font-size: xx-large;
 	width: 100%;
 	text-align: center;
+	margin-right: 33%;
 }
 
 #social-container{
