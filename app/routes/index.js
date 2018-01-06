@@ -93,9 +93,9 @@ module.exports = function (app, passport) {
 		})
 		.post(pollsHandler.singlePoll);
 	
-	app.get('/*').get(function(req, res){
-		res.redirect('/');
-	});
+//	app.get('/*').get(function(req, res){
+//		res.redirect('/');
+//	});
 		
 		
 };
