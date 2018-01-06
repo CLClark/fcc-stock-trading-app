@@ -22,7 +22,6 @@ module.exports = function (app, passport) {
 		}		
 	}
 
-	var clickHandler = new ClickHandler();
 	var pollsHandler = new PollsHandler();
 
 	app.route('/main.html')
@@ -30,20 +29,14 @@ module.exports = function (app, passport) {
 			res.sendFile(path + '/public/main.html');
 		});
 
-	app.route('/main_unauth.html')
-		.get(function (req, res){
-			res.sendFile(path + '/public/main_unauth.html')
-		});
-
 	app.route('/')
 		.get(function (req, res) {
-		//.get(function (req, res) {
 			res.sendFile(path + '/public/main.html');
 		});
 	
 	app.route('/index')
 		.get(isLoggedIn, function (req, res){
-			res.sendFile(path + '/public/index.html');
+			res.sendFile(path + '/public/main.html');
 		});
 
 	app.route('/login')
@@ -65,7 +58,6 @@ module.exports = function (app, passport) {
 	app.route('/api/:id')
 		.get(isLoggedIn, function (req, res) {
 			pollsHandler.myPolls(req, res);
-//			res.json(req.user.github);
 		});
 
 	app.route('/auth/github')
@@ -81,11 +73,6 @@ module.exports = function (app, passport) {
 		.get(isAuthed, function (req, res){			
 			res.json({authStatus:1});
 		});
-
-	app.route('/api/:id/clicks')
-		.get(isLoggedIn, clickHandler.getClicks)
-		.post(isLoggedIn, clickHandler.addClick)
-		.delete(isLoggedIn, clickHandler.resetClicks);	
 
 	app.route('/polls')
 		.get(pollsHandler.allPolls)
@@ -105,5 +92,10 @@ module.exports = function (app, passport) {
 			res.sendFile( path + '/public/single.html');
 		})
 		.post(pollsHandler.singlePoll);
+	
+	app.get('/*').get(function(req, res){
+		res.redirect('/');
+	});
+		
 		
 };
