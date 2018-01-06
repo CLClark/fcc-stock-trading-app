@@ -184,39 +184,38 @@ var AUTHLIB = AUTHLIB || (function () {
 
 			function addSocialDiv(){
 				var pWrapSup = document.querySelectorAll(".poll-wrap-sup") || null;				
-				for (var pWrapper of pWrapSup) {		
-					
-					var partLink = pWrapper.childNodes[0].childNodes[0] || null;
-					var tweext = "Votarama! Vote vote Vote!";
-					var shareLink = "http://" +window.location.hostname;
-					if(partLink != null){
-						try{
-							tweext = partLink.innerHTML; 
-							shareLink = "http://" + window.location.hostname + partLink[href];	
-							console.log(shareLink);
-						} catch(e) {}				
-					}				  
-				  //social container
-			                  var socCon = document.createElement('div');
-			                  socCon.id = "social-container";
-			                  socCon.className = "container";
-			                  var socPla = document.createElement('div');
-			                  socPla.id = "social-place";
-			                  socCon.appendChild(socPla);
-			
-			                  //social               
-			                  var twiAn = document.createElement("a");
-			                  twiAn.href = "https://twitter.com/share?ref_src=twsrc%5Etfw";
-			                  twiAn.className = "twitter-share-button";
-			                  twiAn.setAttribute("data-url", shareLink);
-			                  twiAn.setAttribute("data-text", tweext);
-			                  twiAn.setAttribute("data-size", "large");
-			                  twiAn.setAttribute("data-hashtags", "votarama");
-			                  twiAn.setAttribute("data-show-count", "false");
-			                  twiAn.innerHTML = "Tweet";
-			                  socPla.appendChild(twiAn);
-			                  pWrapper.appendChild(socCon);
-				//});
+				for (var pWrapper of pWrapSup) {	
+					if(pWrapper.id !== "dummy"){	
+
+						var partLink = pWrapper.childNodes[0].childNodes[0] || null;
+						console.log(partLink["href"]);
+						var tweext = "Votarama! Vote vote Vote!";
+						if(partLink != null){
+							try{
+								tweext = partLink.innerHTML;
+							} catch(e) {}				
+						}				  
+						//social container
+						var socCon = document.createElement('div');
+						socCon.id = "social-container";
+						socCon.className = "container";
+						var socPla = document.createElement('div');
+						socPla.id = "social-place";
+						socCon.appendChild(socPla);
+
+						//social               
+						var twiAn = document.createElement("a");
+						twiAn.href = "https://twitter.com/share?ref_src=twsrc%5Etfw";
+						twiAn.className = "twitter-share-button";
+						twiAn.setAttribute("data-url", partLink);
+						twiAn.setAttribute("data-text", tweext);
+						twiAn.setAttribute("data-size", "large");
+						twiAn.setAttribute("data-hashtags", "votarama");
+						twiAn.setAttribute("data-show-count", "false");
+						twiAn.innerHTML = "Tweet";
+						socPla.appendChild(twiAn);
+						pWrapper.appendChild(socCon);
+					}					
 				}
 			}
 

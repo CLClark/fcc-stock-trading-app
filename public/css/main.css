@@ -275,7 +275,7 @@ ul.poll-view-list{
 	text-align: center;
 }
 
-.delete-btn{
+.delete-btn, .cancel-poll{
 	background-color: red;
 }
 

@@ -7,29 +7,27 @@ var mongoose = require('mongoose');
 function PollsHandler () {
 
 	//search data for user profile + polls
-	this.myPolls = function (req, res) {
-//		Users
-//			.findOne({ 'github.id': req.user.github.id }, { '_id': false })
-//			.exec(function (err, result) {				
-				Polls
-				.find({ $and: [{ "github.id": req.user.github.id.substring(0,10)}, {'active': { $eq: true } } ]}, null, { sort: {date: -1}}, function (err, result2) {
-					if (err) { throw err; }
-					//add aggregate poll query data to user object
-					var analyze = pollBuilder(result2, true);
-					var newUserObj = JSON.parse(JSON.stringify(req.user.github.substring(0,10)));
-					newUserObj["totalVotes"] = analyze["totalVotes"];
-					newUserObj["uniqueVoters"] = analyze["uniqueVoters"];
-					res.json(newUserObj);				
-				});		
-//			});
+	this.myPolls = function (req, res) {			
+		var idString = new String(req.user.github.id).substring(0,10);
+		Polls
+		.find({ $and: [{ "github.id": idString}, {'active': { $eq: true } } ]}, null, { sort: {date: -1}}, function (err, result2) {
+			if (err) { throw err; }
+			//add aggregate poll query data to user object
+			var analyze = pollBuilder(result2, true);
+			var newUserObj = JSON.parse(JSON.stringify(req.user.github));
+			newUserObj["totalVotes"] = analyze["totalVotes"];
+			newUserObj["uniqueVoters"] = analyze["uniqueVoters"];
+			res.json(newUserObj);				
+		});		
 	};
 
 	//search DB for poll data that user owns
 	//'GET' to /polls/db
 	this.getPolls = function (req, res) {
 		console.log('handler.server.js.getPolls');
+		var idString = new String(req.user.github.id).substring(0,10);
 		Polls
-		.find({ $and: [{ "github.id": req.user.github.id.substring(0,10)}, {'active': { $eq: true } } ]}, null, { sort: {date: -1}}, function (err, result) {
+		.find({ $and: [{ "github.id": idString}, {'active': { $eq: true } } ]}, null, { sort: {date: -1}}, function (err, result) {
 			if (err) { throw err; }
 			var toSend = pollBuilder(result);
 			console.log('handler.server.js.getPolls ' + result.length);				
@@ -43,7 +41,7 @@ function PollsHandler () {
 		console.log('handler.server.js.singlePoll');
 
 		var ObjectId = require('mongoose').Types.ObjectId;
-		var pollId = req.query.pid.substring(0,10) || "";
+		var pollId = new String(req.query.pid).substring(0,40) || "";
 		var idCheck = ObjectId.isValid(pollId);
 		
 		if(idCheck){
@@ -156,23 +154,23 @@ function PollsHandler () {
 	}
 	
 	this.addPoll = function (req, res) { 
-		console.log('handler.server.js.addPoll');
-		console.log(req.query.q);
+		console.log('handler.server.js.addPoll');		
 		var singlePoll = new Polls();
 		var queryObj = JSON.parse(req.query.q);
 		var choicesObj = {};
 		var choiceQArr = queryObj.choiceList;
+		var stringId = new String(req.user.github.id).substring(0,10);
 
 		console.log(queryObj);		
 		for (var i = choiceQArr.length - 1; i >= 0; i--) {						
-			choicesObj.owner = req.user.github.id.substring(0,10);
+			choicesObj.owner = stringId;
 			choicesObj.choice = choiceQArr[i];
 			singlePoll.choiceList.push(choicesObj);
 		};
 		
 		singlePoll.title = queryObj.title;
 		singlePoll.active = true;
-		singlePoll.github = req.user.github.substring(0,10);
+		singlePoll.github = req.user.github;
 		singlePoll.date = Date.now().toString();
 		singlePoll.save();		
 		console.log(JSON.stringify(singlePoll));
@@ -181,29 +179,29 @@ function PollsHandler () {
 
 	this.deletePoll = function (req, res) {
 		// var mongoose = require('mongoose');				
-		var pollToDel = req.query.pid;
+		var pollToDel = new String(req.query.pid).substring(0,40);
 		var pollKey = mongoose.Types.ObjectId(pollToDel);
 		var adminObject = {};		
 		if(req.user.github.id == '16168260'){									
 		}
 		else{
-			var field = req.user.github.id.substring(0,10);
+			var field = new String(req.user.github.id).substring(0,10);
 			adminObject['github.id'] = field;
 		}
 		Polls
 		.find({ $and: [{ "_id": pollKey}, adminObject, {'active': { $eq: true } } ]}, function (err, result) {
-			console.log(req.user.github.id.substring(0,10));
+			console.log(req.user.github.id);
 			if(result.length > 0){
 				console.log('deletePoll callback' + JSON.stringify(result));
 				if (err) { res.sendStatus(404); }
-				var userId = req.user.github.id.substring(0,10);
+				var userId = new String(req.user.github.id).substring(0,10);
 				// console.log(result);
 				console.log(result[0]);
 				var pollOwner = result[0].github.id;			
 				if(userId == pollOwner || userId == '16168260'){
 					Polls.findByIdAndUpdate(pollToDel, { $set: { active: false }},{lean: false}, function (err, dResult){			
 						if(err) {throw err;}
-						console.log(req.query.pid.substring(0,10) + "found and deleted");			
+						console.log(pollToDel + " found and deleted");			
 						res.sendStatus(200);			
 					});		
 				}			
@@ -222,9 +220,9 @@ function PollsHandler () {
 	}
 
 	this.addChoice = function (req, res) {
-		var choiceString = req.query.choice.substring(0,140);
-		var pollToFind = req.query.pid.substring(0,30);
-		var origin = req.ip.substring(0,140); //arbitrary cut off
+		var choiceString = new String(req.query.choice).substring(0,140);
+		var pollToFind = new String(req.query.pid).substring(0,30);
+		var origin = new String(req.ip).substring(0,140); //arbitrary cut off
 
 		Polls
 		.findById(pollToFind, {lean: false}, function (err, result){			
