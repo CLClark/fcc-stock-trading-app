@@ -1,13 +1,13 @@
 {
-  "name": "clementinejs-fcc",
+  "name": "clclark-clementinejs-fcc",
   "version": "1.0.1",
-  "description": "The elegant and lightweight boilerplate for full stack JavaScript.",
+  "description": "Built from the clementinejs-fcc boilerplate",
   "main": "server.js",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/johnstonbl01/clementinejs-fcc"
   },
-  "homepage": "http://127.0.0.1:8080/",
+  "homepage": "http://localhost:8080/",
   "bugs": "https://github.com/johnstonbl01/clementinejs-fcc/issues",
   "keywords": [
     "MongoDB",
@@ -21,14 +21,16 @@
   "scripts": {
     "start": "node server.js"
   },
-  "author": "Blake Johnston",
+  "authors": "Blake Johnston, Chris L Clark",
   "license": "MIT",
   "dependencies": {
+    "connect-pg-simple": "^4.2.1",
+    "cors": "^2.8.4",
     "dotenv": "^1.2.0",
     "express": "^4.16.2",
-    "express-session": "^1.15.6",
-    "mongoose": "^4.13.8",
+    "express-session": "^1.15.6",    
     "passport": "^0.3.2",
-    "passport-github": "^1.1.0"
+    "passport-facebook": "^2.1.1",    
+    "pg": "^7.4.1"
   }
 }

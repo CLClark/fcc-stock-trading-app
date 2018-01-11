@@ -1,3 +1,8 @@
 node_modules/
 .eslintrc
 .env
+.settings
+enc/
+/server_keystore.jks
+/csr-for-myserver.pem
+/keypairout.key

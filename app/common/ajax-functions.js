@@ -24,9 +24,9 @@ var ajaxFunctions = {
 	         //error callback
 	         callback(xmlhttp.response);
          }
-      };
-
-      xmlhttp.open(method, url);//, syncBoo);//added boolean for async
+      };      
+      xmlhttp.open(method, url);
+      xmlhttp.setRequestHeader('Access-Control-Allow-Origin', 'http://localhost:8080/auth/facebook/callback');  //Access-Control-Allow-Origin: http://mozilla.org
       xmlhttp.send();
    },
 };

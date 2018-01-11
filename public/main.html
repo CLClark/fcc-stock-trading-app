@@ -3,20 +3,22 @@
 <html>
 
 <head>
-	<title>VOTA-RAMA: To Vote or Not to Vote?</title>
+	<title>2 night: FCC Nightlife Coordination App</title>
 
 	<link href="/public/css/main.css" rel="stylesheet" type="text/css">
-
 	<!--Load the AJAX API-->
 	<script type="text/javascript" src="common/ajax-functions.js"></script>	
-	<script type="text/javascript" src="https://www.gstatic.com/charts/loader.js"></script>
-	<!-- -->
+	<!--<script type="text/javascript" src="https://www.gstatic.com/charts/loader.js"></script>-->
+	<!-- 	<script type="text/javascript" src="controllers/barController.client.js"></script> -->
 	<script type="text/javascript" src="controllers/authController.client.js"></script>
-	<script type="text/javascript" src="controllers/pollController.client.js"></script>
+
 	<script type="text/javascript">
-		/*		AUTHLIB.init([null,"https://platform.twitter.com/widgets.js", null]); 		*/
-		MYLIBRARY.init(['/polls', "GET", null]);
-		MYLIBRARY.pollProducer(AUTHLIB.authScript);
+		AUTHLIB.init([null,"twitter widget cb", null]); 		
+		/*
+		MYLIBRARY.init(['/bars', "GET", null]);
+		MYLIBRARY.barProducer(AUTHLIB.authScript);		
+		AUTHLIB.fbControl(AUTHLIB.authScript);*/
+		AUTHLIB.authScript();
 	</script>
 
 </head>
@@ -25,20 +27,27 @@
 	<div id="navi" class="navi-menu">
 		<div id="home-icon"></div>
 		<div class="container" id="welcome-container">
-			<p>Welcome Voter <span id="display-name"></span>!</p>
-			<span id="auth-container">
-			</span>
+			<p>Welcome to Nightlife Coordination App 2night<span id="display-name"></span>!</p>
+			<!--
+			<span id="auth-container"></span>	 
+			-->		
+			<br>
+			<div class="fb-login-button" data-max-rows="1" data-size="large" data-button-type="continue_with" data-show-faces="false" data-auto-logout-link="true" data-use-continue-as="false">
+			</div>
+			<div id="status"></div>		
 		</div>
-
 	</div>
 </header>
 
 <body>
-	<div class="container">
+	<div id="fb-root"></div>	
+	<div class="container center-bar">
 		
 		<br />
-		<p class="clementine-text">Active Polls:</p>
+		<p class="clementine-text">Enter your zip: </p>
+		<input type="search" id="zipSearch" placeholder="Zip code (US)">
 	</div>
+
 	<!--Div that will hold the polls-->    
 	<div id="pollDb">
 		<ul id="poll-view" class="poll-view-list"></ul>
@@ -47,14 +56,11 @@
 </body>
 
 
-
-
-
-
 <footer>
 	<script type="text/javascript">
-		AUTHLIB.navi();   
-	</script>	
+		AUTHLIB.navi();
+		AUTHLIB.fbControl();
+	</script>
 </footer>
 
 </html>

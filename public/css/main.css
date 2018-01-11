@@ -220,6 +220,21 @@ span {
 	margin: 0;
 }
 
+/******* search bar **********/
+
+#zipSearch{
+	text-align: center;
+	height: 50px;
+	margin: 10px;
+	font-size: x-large;	
+}
+
+.center-bar{
+	display: flex;
+	flex-direction: column;
+}
+
+
 /******* poll styles **********/
 .poll-wrap-sup{
 	padding:10px 10px 10px 10px;

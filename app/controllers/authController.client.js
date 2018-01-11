@@ -4,6 +4,7 @@ var AUTHLIB = AUTHLIB || (function () {
 	var ajaxCb;
 	var extScript;
 	var authScriptCB;
+//	var apiAuth = appUrl + '/auth/check';
 	var _args = {}; // private
 	//polyfill:
 	if (window.NodeList && !NodeList.prototype.forEach) {
@@ -19,7 +20,7 @@ var AUTHLIB = AUTHLIB || (function () {
 			_args = Args;
 			ajaxCb = _args[0];
 			extScript = _args[1] || null; //callback for external script
-			authScriptCB = _args[2] || null;
+			authScriptCB = _args[2] || null;			
 			// some other initialising
 		},
 		navi : function(){ ///navigation icon
@@ -43,11 +44,112 @@ var AUTHLIB = AUTHLIB || (function () {
 			}
 
 		},
+		
+		fbControl : function(cb){ 
+			
+			// This is called with the results from from FB.getLoginStatus().
+			function statusChangeCallback(response) {
+				console.log('statusChangeCallback');
+				console.log(response);
+				// The response object is returned with a status field that lets the
+				// app know the current login status of the person.
+				// Full docs on the response object can be found in the documentation
+				// for FB.getLoginStatus().				
+				if (response.status === 'connected') {
+					// Logged into your app and Facebook.
+//					testAPI(appUrl +"/auth/facebook");					
+				} else if (response.status === 'not_authorized') {
+					document.getElementById('status').innerHTML = 'FB authorized ' +
+					'app: not_authorized.';
+//					testAPI(appUrl +"/auth/facebook");		
+				} else {
+					// The person is not logged into your app or we are unable to tell.
+					document.getElementById('status').innerHTML = 'Please log ' +
+					'into this app.';
+//					testAPI(appUrl +"/auth/facebook");
+				}
+			}	
+
+			// This function is called when someone finishes with the Login
+			// Button.  See the onlogin handler attached to it in the sample
+			// code below.
+			function checkLoginState() {
+				FB.getLoginStatus(function(response) {
+					statusChangeCallback(response);
+				});
+			}
+
+			window.fbAsyncInit = function() {
+				FB.init({
+					appId      : '580452925653250',
+					cookie     : true,  // enable cookies to allow the server to access 
+					// the session
+					xfbml      : true,  // parse social plugins on this page
+					version    : 'v2.8' // use graph api version 2.8
+				});
+
+				// Now that we've initialized the JavaScript SDK, we call 
+				// FB.getLoginStatus().  This function gets the state of the
+				// person visiting this page and can return one of three states to
+				// the callback you provide.  They can be:
+				//
+				// 1. Logged into your app ('connected')
+				// 2. Logged into Facebook, but not your app ('not_authorized')
+				// 3. Not logged into Facebook and can't tell if they are logged into
+				//    your app or not.
+				//
+				// These three cases are handled in the callback function.
+
+				FB.getLoginStatus(function(response) {
+					statusChangeCallback(response);
+				});
+				
+				// In your onload method:
+//				FB.Event.subscribe('auth.login', login_event);
+//				FB.Event.subscribe('auth.logout', logout_event);
+//
+//				// In your JavaScript code:
+//				var login_event = function(response) {
+//				  console.log("login_event");
+////				  console.log(response.status);
+////				  console.log(response);
+//				}
+//
+//				var logout_event = function(response) {
+//				  console.log("logout_event");
+//				  console.log(response.status);
+//				  console.log(response);
+//				}
+			};
+
+			// Load the SDK asynchronously
+			(function(d, s, id) {
+				var js, fjs = d.getElementsByTagName(s)[0];
+				if (d.getElementById(id)) return;
+				js = d.createElement(s); js.id = id;
+				js.src = "https://connect.facebook.net/en_US/sdk.js";
+				fjs.parentNode.insertBefore(js, fjs);
+			}(document, 'script', 'facebook-jssdk'));
+
+			// Here we run a very simple test of the Graph API after login is
+			// successful.  See statusChangeCallback() for when this call is made.
+			function testAPI(apiPath) {
+				ajaxFunctions.ready(ajaxFunctions.ajaxRequest('GET', apiPath , false, function (data) {					
+					var authObj = JSON.parse(data);
+					console.log(authObj);
+				}));				
+//				FB.api('/me', function(response) {
+//					console.log('Successful login for: ' + response.name);
+//					cb();
+////					document.getElementById('status').innerHTML = 'Thanks for logging in, ' + response.name + '!';					
+//				});
+			}	  				  
+		},
+		
 		authScript : function(){
 
 			//var naviContainer = document.getElementById('navi') || null;
-			//var authContainer = document.getElementById('auth-container') || null;
-			var apiAuth = appUrl + '/auth/check';
+			//var authContainer = document.getElementById('auth-container') || null;			
 
 			function makeDiv(){
 				var newSpan2 = document.createElement("span");
@@ -55,7 +157,7 @@ var AUTHLIB = AUTHLIB || (function () {
 				var aPro1 = document.createElement("a");
 				aPro1.className = "menu";
 				aPro1.href = "/profile";
-				aPro1.innerHTML = "My Polls";
+				aPro1.innerHTML = "my Night";
 				var aLog1 = document.createElement("a");
 				aLog1.className = "menu";
 				aLog1.href = "/logout";
@@ -72,20 +174,23 @@ var AUTHLIB = AUTHLIB || (function () {
 				var newSpan = document.createElement("span");
 
 				var aPro = document.createElement("a");
-				aPro.href = "/auth/github";		
+				aPro.href = "/auth/facebook";		
 				var aLog = document.createElement("div");
 				aLog.className = "btn";
 				aLog.id = "login-btn";
 				var iBar = document.createElement("img");
-				iBar.src= "/public/img/github_32px.png";
-				iBar.alt= "github logo";
+				iBar.width = "24";
+				iBar.height = "24";
+				iBar.src= "https://static.xx.fbcdn.net/rsrc.php/v3/yC/r/aMltqKRlCHD.png";
+				iBar.alt= "app-facebook";
 				var pText = document.createElement("p");
-				pText.innerHTML = "LOGIN WITH GITHUB";
+				pText.innerHTML = "LOGIN WITH FB";
 				newSpan.appendChild(aPro);
 				aPro.appendChild(aLog);
 				aLog.appendChild(iBar);
 				aLog.appendChild(pText);
 				return newSpan;
+				
 			}
 
 			ajaxFunctions.ready(ajaxFunctions.ajaxRequest('GET', apiAuth, false, function (data) {
@@ -96,13 +201,13 @@ var AUTHLIB = AUTHLIB || (function () {
 				if(authObj.authStatus == true){
 					//var randomNode = document.getElementById('auth-container');
 					authNode.replaceWith(makeDiv());
-					addPollDiv("null");					
-					addChoiceListener(); //choice script
-					addDeleteDiv();
+//					addPollDiv("null");					
+//					addChoiceListener(); //choice script
+//					addDeleteDiv();
 					//prevent loading tweet api on home page (large poll count)					
 					if(location.pathname !== "/"){
-						addSocialDiv(); //tweet button (share)					
-						authScriptCB(); //tweet script	
+//						addSocialDiv(); //tweet button (share)					
+//						authScriptCB(); //tweet script	
 					}					
 				}
 				else if(authObj.authStatus == false){
@@ -110,11 +215,11 @@ var AUTHLIB = AUTHLIB || (function () {
 					if(authNode !== null){
 						authNode.replaceWith(makeDefaultDiv());
 					}
-					addChoiceNotifier(); //choice script
+//					addChoiceNotifier(); //choice script
 				}				
 
 			}));
-
+/*
 			function addChoiceListener(){
 				var cButtons = document.querySelectorAll(".choice-btn") || null;				
 				for (var cButton of cButtons) {							
@@ -387,7 +492,7 @@ var AUTHLIB = AUTHLIB || (function () {
 					controlPad.appendChild(pollDum);
 				}
 			}
-		},
+		*/},
 
 		userScript : function(){
 
