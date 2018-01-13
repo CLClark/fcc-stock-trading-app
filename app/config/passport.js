@@ -24,6 +24,7 @@ module.exports = function (passport) {
 		.then(client => {
 console.log('pg-connected: deser')
 			client.query(text,values, function (err, result){
+				client.release();
 				if(err){					
 					return done(err, null);
 				}
@@ -32,7 +33,7 @@ console.log('pg-connected: deser')
 				} else {
 					//format deserialized user
 					var user = {	id: result.rows[0].id, displayName: result.rows[0].displayName	};
-					return done(err, user);
+					return done(err, user);					
 				}
 			});
 		})
@@ -43,8 +44,9 @@ console.log('pg-connected: deser')
 	passport.use(new FacebookStrategy({
 		clientID: configAuth.facebookAuth.clientID,
 		clientSecret: configAuth.facebookAuth.clientSecret,
-		callbackURL: configAuth.facebookAuth.callbackURL
+		callbackURL: configAuth.facebookAuth.callbackURL,
 //		enableProof: true
+		state: true 
 	},	
 	function (token, refreshToken, profile, done) { //cb
 		process.nextTick(function () {
@@ -82,12 +84,14 @@ console.log('pg-connected: deser')
 						.then(client2 => {
 console.log('pg-connected2');
 							client2.query(insertText, insertValues, function (err, result){
+								client2.release();
 								if(err){
 									return done(err, null);
 								} else{
 console.log("inserted 1 user: " + result.rows[0].id);
 									//format user
-									var user = {	id: result.rows[0].id, displayName: result.rows[0].displayName	};								
+									var user = {	id: result.rows[0].id, displayName: result.rows[0].displayName	};
+									
 									return done(err, user);
 								}
 							});//client.query

@@ -21,7 +21,7 @@ module.exports = function (app, passport) {
 		} else {
 			console.log('auth fail');
 //			return next();
-			res.json({authStatus:0});	
+			res.json({authStatus:0, zipStore: req.session.lastZip});	
 		}		
 	}
 	
@@ -32,6 +32,8 @@ module.exports = function (app, passport) {
 
 	app.route('/')
 		.get(function (req, res) {
+//			req.session.custom = "custom_put";
+//			console.log(req.session);
 			res.sendFile(path + '/public/main.html');
 		});
 	
@@ -75,7 +77,7 @@ module.exports = function (app, passport) {
 	
 	app.route('/auth/check')
 		.get(isAuthed, function (req, res){			
-			res.json({authStatus:1});
+			res.json({authStatus:1, zipStore: req.session.lastZip});
 		});
 	/*********************************************/
 	var barsHandler = new BarsHandler();

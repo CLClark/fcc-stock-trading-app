@@ -4,7 +4,8 @@ var AUTHLIB = AUTHLIB || (function () {
 	var ajaxCb;
 	var extScript;
 	var authScriptCB;
-//	var apiAuth = appUrl + '/auth/check';
+	var apiAuth = appUrl + '/auth/check';
+	var defSearch = null;
 	var _args = {}; // private
 	//polyfill:
 	if (window.NodeList && !NodeList.prototype.forEach) {
@@ -80,13 +81,13 @@ var AUTHLIB = AUTHLIB || (function () {
 			}
 
 			window.fbAsyncInit = function() {
-				FB.init({
-					appId      : '580452925653250',
-					cookie     : true,  // enable cookies to allow the server to access 
-					// the session
-					xfbml      : true,  // parse social plugins on this page
-					version    : 'v2.8' // use graph api version 2.8
-				});
+//				FB.init({
+//					appId      : '580452925653250',
+//					cookie     : true,  // enable cookies to allow the server to access 
+//					// the session
+//					xfbml      : true,  // parse social plugins on this page
+//					version    : 'v2.8' // use graph api version 2.8
+//				});
 
 				// Now that we've initialized the JavaScript SDK, we call 
 				// FB.getLoginStatus().  This function gets the state of the
@@ -100,9 +101,9 @@ var AUTHLIB = AUTHLIB || (function () {
 				//
 				// These three cases are handled in the callback function.
 
-				FB.getLoginStatus(function(response) {
-					statusChangeCallback(response);
-				});
+//				FB.getLoginStatus(function(response) {
+//					statusChangeCallback(response);
+//				});
 				
 				// In your onload method:
 //				FB.Event.subscribe('auth.login', login_event);
@@ -152,8 +153,8 @@ var AUTHLIB = AUTHLIB || (function () {
 			//var authContainer = document.getElementById('auth-container') || null;			
 
 			function makeDiv(){
-				var newSpan2 = document.createElement("span");
-
+				var newSpan2 = document.createElement("div");
+				newSpan2.id = "login-nav";
 				var aPro1 = document.createElement("a");
 				aPro1.className = "menu";
 				aPro1.href = "/profile";
@@ -171,10 +172,10 @@ var AUTHLIB = AUTHLIB || (function () {
 			}
 
 			function makeDefaultDiv(){
-				var newSpan = document.createElement("span");
+				var newSpan = document.createElement("div");
 
 				var aPro = document.createElement("a");
-				aPro.href = "/auth/facebook";		
+//				aPro.href = "/auth/facebook";		
 				var aLog = document.createElement("div");
 				aLog.className = "btn";
 				aLog.id = "login-btn";
@@ -184,12 +185,12 @@ var AUTHLIB = AUTHLIB || (function () {
 				iBar.src= "https://static.xx.fbcdn.net/rsrc.php/v3/yC/r/aMltqKRlCHD.png";
 				iBar.alt= "app-facebook";
 				var pText = document.createElement("p");
-				pText.innerHTML = "LOGIN WITH FB";
+				pText.innerHTML = "Sign in with Facebook";
 				newSpan.appendChild(aPro);
 				aPro.appendChild(aLog);
 				aLog.appendChild(iBar);
 				aLog.appendChild(pText);
-				return newSpan;
+				return newSpan;				
 				
 			}
 
@@ -197,6 +198,12 @@ var AUTHLIB = AUTHLIB || (function () {
 				
 				var authObj = JSON.parse(data);				
 				var authNode = document.getElementById('auth-container');
+				var reg = new RegExp('^(\\d\\d\\d\\d\\d)$');				
+				if(reg.test(authObj.zipStore)){
+					var keyup = new Event('keyup'); 
+					document.querySelector('#zipSearch').value = authObj.zipStore;
+					document.querySelector('input#zipSearch').dispatchEvent(keyup);
+				}
 
 				if(authObj.authStatus == true){
 					//var randomNode = document.getElementById('auth-container');
@@ -214,6 +221,10 @@ var AUTHLIB = AUTHLIB || (function () {
 					//var randomNode2 = document.getElementById('auth-container');
 					if(authNode !== null){
 						authNode.replaceWith(makeDefaultDiv());
+						document.querySelector('#login-btn').addEventListener('click', function(){
+							location.replace('/auth/facebook');
+//							console.log(response);							
+						});						
 					}
 //					addChoiceNotifier(); //choice script
 				}				

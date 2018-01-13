@@ -97,13 +97,23 @@ header a ~ p {
 	text-align: center;
 }
 
+#login-nav{
+	display: flex;
+	flex-direction: row;
+	margin: 0 auto 0 auto;
+}
+
 #login-btn {
-	width: 225px;
+	width: 200px;
 	padding: 7px 5px;
+	background-color: #4363a2;
+ 	display: flex;
+/*	flex-direction: row; */
+	margin: 10px auto 0 auto;
 }
 
 .btn p {
-	margin: 8px 0 0 0;
+	margin: auto;
 	padding: 0;
 }
 
@@ -237,15 +247,54 @@ span {
 
 /******* poll styles **********/
 .poll-wrap-sup{
-	padding:10px 10px 10px 10px;
+	/* padding:10px 10px 10px 10px; */
 	border: grey;
 	border-style: outset;
-	border-width: thick;
-	background-color: white;
+	border-width: thick;	
 	border-radius: 10px;
 	margin-bottom: 5px;
 	position: relative;
+	
+	/* background-color: #f9f9f9; */	
+	display: flex;
+	flex-direction: row;
+	overflow: hidden;
 }
+.poll-wrap-sup:hover{
+	background-color: white;	
+}
+
+.poll-wrap-pic{
+	background-repeat: no-repeat;
+	background-position: center top;
+	background-size: cover;
+	flex-grow: 1;
+	 opacity: .5;
+}
+.poll-wrap-pic:hover{
+	background-repeat: no-repeat;
+	background-position: center center;
+	background-size: cover;
+	flex: 1.5;
+	opacity: unset;
+}
+.poll-wrap-info{
+	/* background-repeat: no-repeat;
+	background-position: right center;
+	background-size: auto 100%; */
+	flex: 2;
+	height: 7em;
+}
+
+
+.poll-title{
+	padding: 5px 0 10px 5px;
+	font-size: x-large;
+	font-weight: bold;
+	color: #FFA000;
+	text-overflow: clip;
+}
+
 
 ul.poll-view-list{
 	list-style-type: none;
@@ -254,8 +303,8 @@ ul.poll-view-list{
 }
 
 .poll-view-list-poll{
-	margin: 0 0 50px 0;
-	width: 100%;
+	/* margin: 0 0 50px 0; */
+	/* width: 100%; */
 	overflow: hidden;
 	/*flex: 0 0 70%;
 	padding: 0 10% 0 0;
@@ -326,13 +375,6 @@ ul.poll-view-list{
 	width: unset;
 }
 
-.poll-title{
-	padding: 0 10px 10px 10px;
-	font-size: x-large;
-	font-weight: bold;
-	color: #FFA000;
-}
-
 .control-btns{
 	display: flex;
 	flex-direction: column;
@@ -345,7 +387,7 @@ ul.poll-view-list{
 	font-size: xx-large;
 	width: 100%;
 	text-align: center;
-	margin-right: 33%;
+	/* margin-right: 33%; */
 }
 
 #social-container{

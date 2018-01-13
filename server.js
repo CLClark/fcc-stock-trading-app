@@ -21,14 +21,12 @@ app.use('/controllers', express.static(process.cwd() + '/app/controllers'));
 app.use('/public', express.static(process.cwd() + '/public'));
 app.use('/common', express.static(process.cwd() + '/app/common'));
 
-var pgPool = new pg.Pool({
-	    // Insert pool options here 
-	});
-	 
+var pgPool = new pg.Pool(config);
+
 app.use(session({
 	store: new pgSession({
 		pool : pgPool,                // Connection pool 
-		tableName : 'sessions'   // Use another table-name than the default "session" one 
+		tableName : 'session'   // Use another table-name than the default "session" one 
 	}),
 	secret: process.env.ZOO_COOKIE_SECRET,
 	resave: false,
@@ -36,15 +34,8 @@ app.use(session({
 	saveUninitialized: true
 }));
 
-//app.use(session({
-//	secret: 'secretClementine',
-//	resave: false,
-//	saveUninitialized: true
-//}));
-
 app.use(passport.initialize());
 app.use(passport.session());
-
 
 //app.use(function (req, res, next) {
 //	res.setHeader('Access-Control-Allow-Origin', '*');

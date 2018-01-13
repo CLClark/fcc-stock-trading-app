@@ -26,7 +26,7 @@ var ajaxFunctions = {
          }
       };      
       xmlhttp.open(method, url);
-      xmlhttp.setRequestHeader('Access-Control-Allow-Origin', 'http://localhost:8080/auth/facebook/callback');  //Access-Control-Allow-Origin: http://mozilla.org
+//      xmlhttp.setRequestHeader('Access-Control-Allow-Origin', 'http://localhost:8080/auth/facebook/callback');  //Access-Control-Allow-Origin: http://mozilla.org
       xmlhttp.send();
    },
 };
