@@ -1,7 +1,7 @@
 'use strict';
 
 var AUTHLIB = AUTHLIB || (function () {
-	var ajaxCb;
+	var randCb;
 	var extScript;
 	var authScriptCB;
 	var apiAuth = appUrl + '/auth/check';
@@ -19,7 +19,7 @@ var AUTHLIB = AUTHLIB || (function () {
 	return{
 		init : function(Args) {
 			_args = Args;
-			ajaxCb = _args[0];
+			randCb = _args[0];
 			extScript = _args[1] || null; //callback for external script
 			authScriptCB = _args[2] || null;			
 			// some other initialising
@@ -39,11 +39,40 @@ var AUTHLIB = AUTHLIB || (function () {
 				return aIcon;
 			}
 
-			//var naviNode = document.getElementById('navi');
 			if(homeIcon !== null){
 				homeIcon.replaceWith(makeNaviDiv());
 			}
+			
+			var apiIcon = document.getElementById('api-icon') || null;			
+			function makeAPIDiv(){
 
+				var aIcon = document.createElement("a");
+				aIcon.href = "https://www.yelp.com";		
+				var imgIcon = document.createElement("img");
+				imgIcon.src = "/public/img/Yelp_trademark_RGB.png";
+				imgIcon.id = "api-icon";				
+				aIcon.appendChild(imgIcon);
+				return aIcon;
+			}
+			
+			if(apiIcon !== null){
+				apiIcon.replaceWith(makeAPIDiv());
+			}
+			
+			var clock = document.getElementById('clock-time') || null;			
+			function makeClock(){
+				
+				var now = new Date(Date.now());	
+				return now.toLocaleString();
+			}
+			
+			if(apiIcon !== null){
+				clock.innerHTML = makeClock();
+				var intervalID = window.setInterval(myCallback, 1000);				
+				function myCallback() {
+				  clock.innerHTML = makeClock();
+				}				
+			}
 		},
 		
 		fbControl : function(cb){ 
@@ -147,7 +176,29 @@ var AUTHLIB = AUTHLIB || (function () {
 			}	  				  
 		},
 		
-		authScript : function(){
+		chooser : function(passedInFn){
+			var cButtons = document.querySelectorAll(".poll-wrap-sup") || null;				
+			for (var cButton of cButtons) {							
+				cButton.setAttribute("style","background-color: green");
+				//add a new choice to an existing poll
+				cButton.addEventListener('click', function () {
+//					var choiceText = prompt("Type your choice here");
+//					while(choiceText.length > 140){
+//						choiceText = prompt("Choice is too long. (Too many characters, 140 max). Reenter choice:", choiceText);
+//					}
+//					if(choiceText !== "" && choiceText !== null){
+						var today = new Date();
+						var keyName = this.querySelector('.poll-view-list-poll');
+						console.log(keyName.getAttribute("poll-key"));
+						ajaxFunctions.ajaxRequest('POST', '/bars/db?date=' + today.toISOString() + "&" + "bid=" + keyName.getAttribute("poll-key"), false, function (error, response) {
+							 window.location.reload(true);
+						});
+//					}
+				}, false);
+			}
+		},
+		
+		authScript : function(passedInFn){
 
 			//var naviContainer = document.getElementById('navi') || null;
 			//var authContainer = document.getElementById('auth-container') || null;			
@@ -206,15 +257,12 @@ var AUTHLIB = AUTHLIB || (function () {
 				}
 
 				if(authObj.authStatus == true){
-					//var randomNode = document.getElementById('auth-container');
 					authNode.replaceWith(makeDiv());
-//					addPollDiv("null");					
-//					addChoiceListener(); //choice script
-//					addDeleteDiv();
-					//prevent loading tweet api on home page (large poll count)					
-					if(location.pathname !== "/"){
-//						addSocialDiv(); //tweet button (share)					
-//						authScriptCB(); //tweet script	
+					
+					apptFind();
+//					addChoiceListener();
+					
+					if(location.pathname !== "/"){	
 					}					
 				}
 				else if(authObj.authStatus == false){
@@ -222,17 +270,39 @@ var AUTHLIB = AUTHLIB || (function () {
 					if(authNode !== null){
 						authNode.replaceWith(makeDefaultDiv());
 						document.querySelector('#login-btn').addEventListener('click', function(){
-							location.replace('/auth/facebook');
-//							console.log(response);							
+							location.replace('/auth/facebook');							
 						});						
 					}
-//					addChoiceNotifier(); //choice script
 				}				
+			}));	
+									
+			function makeAppts(addText){
+				var newSpanTxt = document.createElement("h4");
+				newSpanTxt.id = "appts-text";				
+				newSpanTxt.innerHTML = "My Appointments: " + addText;				
+				return newSpanTxt;
+			}
+			
+			function apptFind() {				
+				//appointment functions
+				var proCon = document.querySelector("#profile-container") || null;				
+				var request = ( '/bars/db' );  
+				ajaxFunctions.ready(ajaxFunctions.ajaxRequest('GET', request, false, function (data) {					
+					var apptsFound = JSON.parse(data);
+					console.log(apptsFound);
+					if(apptsFound.barsFound !== "none"){
+						proCon.setAttribute("style", "display: unset");
+						proCon.appendChild(makeAppts());
+						randCb(apptsFound, 'appts-view', null);	
+					} else {
+						proCon.setAttribute("style", "display: unset");
+						proCon.appendChild(makeAppts("none found"));
+					}
+				}));
+			};
 
-			}));
-/*
-			function addChoiceListener(){
-				var cButtons = document.querySelectorAll(".choice-btn") || null;				
+			/*function addChoiceListener(){
+				var cButtons = document.querySelectorAll(".poll-wrap-sup") || null;				
 				for (var cButton of cButtons) {							
 					cButton.setAttribute("style","background-color: green");
 					//add a new choice to an existing poll
@@ -241,15 +311,16 @@ var AUTHLIB = AUTHLIB || (function () {
 						while(choiceText.length > 140){
 							choiceText = prompt("Choice is too long. (Too many characters, 140 max). Reenter choice:", choiceText);
 						}
-						if(choiceText !== "" && choiceText !== null){							
-							ajaxFunctions.ajaxRequest('GET', '/polls/votes?choice=' + choiceText + "&" + "pid=" + this.pid, false, function (error, response) {
+						if(choiceText !== "" && choiceText !== null){
+							var today = new Date(Date.now);
+							ajaxFunctions.ajaxRequest('POST', '/bars/db?date=' + today.toISOString() + "&" + "bid=" + this.id, false, function (error, response) {
 								 window.location.reload(true);
 							});
 						}
 					}, false);
 				}
-			}
-			
+			}*/
+/*	
 			function addChoiceNotifier(){
 				var cButtons = document.querySelectorAll(".choice-btn") || null;				
 				for (var cButton of cButtons) {							
@@ -537,7 +608,7 @@ var AUTHLIB = AUTHLIB || (function () {
 				            updateHtmlElement(userObject, profileVotersCount, 'uniqueVoters');   
 				         }
 			         
-				ajaxCb();
+
 			}));
 		},
 

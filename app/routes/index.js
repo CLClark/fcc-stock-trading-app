@@ -84,15 +84,18 @@ module.exports = function (app, passport) {
 	app.route('/bars')
 		.get(barsHandler.allBars)
 		.post(isLoggedIn, barsHandler.addBar);	
+	
+	app.route('/bars/db')
+		.get(isLoggedIn, barsHandler.getAppts)
+		.post(isLoggedIn, barsHandler.addAppt);
+//		.delete(isLoggedIn, barsHandler.deleteAppt);
 
 //	app.route('/polls/votes')
 //		.delete(isLoggedIn, pollsHandler.removeChoice)
 //		.post(pollsHandler.addVote)
 //		.get(isLoggedIn, pollsHandler.addChoice);
 //
-//	app.route('/polls/db')
-//		.get(isLoggedIn, pollsHandler.getPolls)
-//		.delete(isLoggedIn, pollsHandler.deletePoll);
+
 //
 //	app.route('/polls/view')
 //		.get( function(req, res){

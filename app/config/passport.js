@@ -109,7 +109,7 @@ console.log("found user in db: " + result.rows[0].id);
 				});
 			})
 			.catch(err => console.error('error connecting', err.stack))
-			.then(() => pool.end());
+			.then(() => pool());
 		}); //nextTick (async)
 	})); //use callback//passport.use
 };

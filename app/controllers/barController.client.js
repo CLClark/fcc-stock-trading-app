@@ -1,18 +1,25 @@
 'use strict';      
 
 var MYLIBRARY = MYLIBRARY || (function () {
-	var _args = {}; // private   
+	var _args = {}; // private
+	var functionCB;
+	var formerCB;
 	return {
 		init : function(Args) {
 			_args = Args;
 			// some other initialising
+			functionCB = _args[0];
+			formerCB = _args[1];
 		},
 	barProducer : function(passedInFunction) {
-		var yelper = new Event('yelpApi');  
+		var yelper = new Event('yelpApi');
 		// Listen for the event.
-		document.querySelector('#poll-view').addEventListener('yelpApi', function (e) {
-			this.innerHTML = "now finding, Please hold...";
-		}, false);   
+		var staticText = document.querySelector('#poll-view') || null;
+		if (staticText !== null){
+			document.querySelector('#poll-view').addEventListener('yelpApi', function (e) {
+				this.innerHTML = "now finding, Please hold...";
+			}, false);
+		}
 	
 		document.querySelector('input#zipSearch').addEventListener("keyup", function(){      
 			var i = document.querySelector('#zipSearch').value;
@@ -27,21 +34,24 @@ var MYLIBRARY = MYLIBRARY || (function () {
 				ajaxFunctions.ready(ajaxFunctions.ajaxRequest('GET', request, false, function (data) {
 					document.querySelector('#poll-view').innerHTML = "";
 					var barsFound = JSON.parse(data);
-					console.log(barsFound);
-					passedInFunction(barsFound);
+		console.log(barsFound);					
+					functionCB(barsFound, 'poll-view', passedInFunction);
 				}));
 			};
 		});
 	},
-	barFormer : function(jsonData) {
+	barFormer : function(jsonData, parentIdString, passedInF) {
 		//turn json into html elements
 		for(var i = 0; i < jsonData.length; i++){
 			//create a div for each poll
 			var pId = ("poll-").concat(i);
 			var jone = jsonData[i];
-			var pollView = document.getElementById('poll-view');  //ul     
-			addElement(pId, pollView, jone, null);
+			var pollView = document.getElementById(parentIdString);  //ul     
+			addElement(pId, pollView, jone, null);			
 		}
+		if(passedInF !== null){
+			passedInF();	
+		}		
 	            function addElement (divName, parent, polljone, options) {
 	                      var pollCopy = JSON.parse(JSON.stringify(polljone));
 	                      var pollChoices = pollCopy.pollData;

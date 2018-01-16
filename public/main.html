@@ -13,10 +13,8 @@
 	<script type="text/javascript" src="controllers/authController.client.js"></script>
 
 	<script type="text/javascript">
-		AUTHLIB.init([null,"twitter widget cb", null]); 		
-		/*
-		AUTHLIB.fbControl(AUTHLIB.authScript);	*/
-		AUTHLIB.authScript();	
+		MYLIBRARY.init([MYLIBRARY.barFormer, null, null]);	
+		AUTHLIB.init([MYLIBRARY.barFormer,"twitter widget cb", null]);
 	</script>
 </head>
 
@@ -24,6 +22,7 @@
 </header>
 <body>
 	<div id="navi" class="navi-menu">
+		<div id="api-icon"></div>
 		<div id="home-icon"></div>
 		<div class="container" id="welcome-container">
 			<p>Welcome to Nightlife Coordination App 2night<span id="display-name"></span>!</p>
@@ -37,24 +36,31 @@
 		</div>
 	</div>
 
-	<div id="fb-root"></div>	
-	<div class="container center-bar">		
+	<div id="fb-root"></div>
+	<div id="clock">
+		<h3 id="clock-time">
+		js clock: time
+		</h3>
+	</div>
+	<div class="container center-bar">			
 		<br />
-		<p class="clementine-text">Enter your zip: </p>
+		<h1 class="clementine-text">Enter your zip: </h1>
 		<input type="text" id="zipSearch" name="q" placeholder="Zip code (US)">				
 	</div>
-
+	<div id="profile-container" style="display: none">
+		<ul id="appts-view" ></ul>
+	</div>
 	<!--Div that will hold the polls-->    
 	<div id="pollDb">
 		<ul id="poll-view" class="poll-view-list"></ul>
 	</div>	
 </body>
 <footer>		
-	<script type="text/javascript">		
+	<script type="text/javascript">
+		MYLIBRARY.barProducer(AUTHLIB.chooser);
 		AUTHLIB.navi();
-		AUTHLIB.fbControl();	
-		MYLIBRARY.init(['/bars', "GET", null]);
-		MYLIBRARY.barProducer(MYLIBRARY.barFormer);
+		AUTHLIB.fbControl();
+		AUTHLIB.authScript();		
 	</script>
 </footer>
 
