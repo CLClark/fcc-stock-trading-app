@@ -255,6 +255,10 @@ span {
 
 
 /******* poll styles **********/
+#appts-view{
+	padding: 10px 5% 10px 5%;
+	background-color: #0073bb;
+}
 .poll-wrap-sup{
 	/* padding:10px 10px 10px 10px;
 	border: grey; */
@@ -264,15 +268,16 @@ span {
 	margin-bottom: 5px;
 	position: relative;
 	
-	/* background-color: #f9f9f9; */	
+	background-color: #f9f9f9;
 	display: flex;
 	flex-direction: row;
 	overflow: hidden;
 }
+/* 
 .poll-wrap-sup:hover{
 	background-color: #f5f5f5;	
 }
-
+ */
 .poll-wrap-pic{
 	background-repeat: no-repeat;
 	background-position: center top;
@@ -349,7 +354,21 @@ ul.poll-view-list, #profile-container{
 }
 
 .delete-btn, .cancel-poll{
-	background-color: red;
+	background-color: #333333;
+	opacity: .7;
+	padding: unset;
+	margin: unset;
+	color: white;
+	text-align: center;
+	vertical-align: middle;
+	height: 100%;
+	display: flex;
+	flex-direction: column;
+}
+.del-text{
+	margin: auto;
+	padding: unset;
+	font-weight: bold;
 }
 
 .delete-poll{
@@ -393,7 +412,7 @@ ul.poll-view-list, #profile-container{
 #show-text{
 	color: #d8d8d8;
 	font-style: italic;
-	font-size: xx-large;
+ 	font-size: xx-large; 
 	width: 100%;
 	text-align: center;
 	/* margin-right: 33%; */
@@ -409,7 +428,7 @@ ul.poll-view-list, #profile-container{
 
 a,abbr,acronym,address,applet,article,aside,audio,b,big,blockquote,body,canvas,caption,center,cite,code,dd,del,details,dfn,div,dl,dt,em,embed,fieldset,figcaption,figure,footer,form,h1,h2,h3,h4,h5,h6,header,hgroup,html,i,iframe,img,ins,kbd,label,legend,li,mark,menu,nav,object,ol,output,p,pre,q,ruby,s,samp,section,small,span,strike,strong,sub,summary,sup,table,tbody,td,tfoot,th,thead,time,tr,tt,u,ul,var,video {
  margin:0;
- padding:0;
+/*  padding:0; */
  border:0;
  font-size:100%;
  font:inherit;

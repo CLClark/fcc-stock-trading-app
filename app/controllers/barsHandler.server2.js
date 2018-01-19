@@ -9,6 +9,8 @@ var config = parse(process.env.DATABASE_URL);
 
 
 function BarsHandler () {
+	
+	
 	//find all active bars (for app home page)
 	this.allBars = function (req, res) {
 		console.log('allBars callback');
@@ -32,12 +34,16 @@ function BarsHandler () {
 			path: '/v3/businesses/search?' + queryData,
 			method: 'GET',
 			headers: {
-				'Authorization': ('Bearer ' + process.env.API_KEY)
+				'Authorization': ('Bearer ' + process.env.API_KEY),
+				'user-agent': 'clclarkFCC/1.0',
+				'Accept-Language': 'en-US',
+				'Accept-Encoding': 'gzip, deflate, br'
 			}
 		};		
 		const sreq = https.request(options, (res2) => {
 			let body1 = [];
 			console.log(`STATUS: ${res.statusCode}`);
+//			console.log(sreq.socket.remoteAddress);
 //			console.log(`HEADERS: ${JSON.stringify(res.headers)}`);
 //			res2.setEncoding('utf8');
 			res2.on('data', (d) => {				
@@ -45,12 +51,12 @@ function BarsHandler () {
 			 });
 			res2.on('end', () => {
 				try {
-					var bodyJSON = JSON.parse(Buffer.concat(body1).toString());
+					var resJSON = JSON.parse(Buffer.concat(body1).toString());
 					//TODO promise
 					
 //			console.log(bodyJSON.businesses);
 					console.log("all bars");
-					barBuilder(bodyJSON.businesses)					
+					barBuilder(resJSON.businesses)					
 					.then( builtResults => {
 						res.json(builtResults);
 						storeBusinesses(builtResults);
@@ -66,73 +72,82 @@ function BarsHandler () {
 			console.error(`problem with request: ${e.message}`);
 		});
 		sreq.end();
-/*		
-		config.ssl = true;
-		var pool = new pg.Pool(config);
-		pool.connect()
-		.then(client => {
-			console.log('connected')
-			client.query('SELECT * FROM test_table', function (err, result){
-				if (err){
-					console.error(err);
-					response.send("Error " + err);					
-				}
-				else {
-					response.render('pages/db', {results: result.rows} );					
-				}			
-			});
-		})
-		.catch(err => console.error('error connecting', err.stack))
-		.then(() => pool.end());
-*/
 	}//allBars function
 	
 	function storeBusinesses(data){
-//		var barsJSON = JSON.parse(data);
-		var barsJSON = (data);
-		console.log("store bus: fn ")		
-		console.log(barsJSON.length);
+//		var pool4 = new pg.Pool(config);
+//		var p = Promise.resolve();		
+//		for (let i = 0; i < data.length; i++) {
+//			p = p.then(() => {
+//				storeBusiness(data[i], pool4);				
+//			});			
+//		}//for loop
 		
-		var insertValues = [];
+		const pool5 = new pg.Pool(config);
+		let bars = [];
 		
-		var bNameArr = [];
-		var yIdArr = [];
+		var multiBar = data.forEach( function (eachBar) {											
+			var promToP = storeBusiness(eachBar, pool5);
+			bars.push(promToP);						
+		});			
 		
-		const insertText = 'INSERT INTO bars(\"busiName\", \"yelpID\") '+
-		'VALUES($1, $2) '+
-//		'ON CONFLICT DO UPDATE ';
-		'ON CONFLICT DO NOTHING RETURNING *';
+		Promise.all(bars)		
+		.then(doneInserting => (pool5.end()))
+		.catch(e=>{console.log(e + "store businesses error");});	
 		
-		for(var i = 0; i < barsJSON.length; i++){
-//			console.log("store bus: " + i);
-			var busName = new String(barsJSON[i].title).substring(0,140) || null; //arbitrary cut off
-			var yelpId = new String(barsJSON[i].id).substring(0,100) || null;
+	}//store businesses	
+	
+	
+	function storeBusiness(data, poolInst){		
+		
+		return new Promise((resolve, reject)=>{	
+			
+			var barsJSON = (data);
+//			var pool4 = new pg.Pool(config);	
+			var pool4 = poolInst;
+//			console.log("store business: ")
+
+			var i = 0;
+		
+			const insertText = 'INSERT INTO bars(\"busiName\", \"yelpID\") '+
+			'VALUES($1, $2) '+
+			'ON CONFLICT DO NOTHING RETURNING *';
 						
-//			bNameArr.push(busName); //name
-//			yIdArr.push(yelpId);		//id
-		}//for loop
-		
-		insertValues.push(busName);
-		insertValues.push(yelpId);
-		//new postgresql connection
-		var pool4 = new pg.Pool(config);
-		pool4.connect()
-		.then(client2 => {
-			console.log('pg-connected4');
-			client2.query(insertText, insertValues, function (err, result){
-//				client2.release();
-				if(err){ console.log(err);
-				} else {
-					console.log("inserted bars: "+ result.rowCount); 
-					console.log(result);
-				}
-			});//client.query
-		})
-		.catch(err => console.error('error connecting2', err.stack))
-		.then(() => {pool4.end();});		
-		
+			var busName = new String(barsJSON.title).substring(0,140) || null; //arbitrary cut off
+			var yelpId = new String(barsJSON.id).substring(0,100) || null;
+			
+			var insertValues = [];
+			insertValues.push(busName);
+			insertValues.push(yelpId);	console.log(insertValues);
+			
+			//new postgresql connection
+			pool4.connect()
+			.then(client2 => {
+				console.log('pg-connected4');				
+				client2.query(insertText, insertValues, function (err, result){
+					client2.release();
+					if(err){
+						console.log(err);
+						reject(err);
+					} else {
+						resolve(result);
+						console.log("inserted bars: "+ result.rowCount);
+					}
+				});//client.query
+			})
+			.catch(err => console.error('error connecting2', err.stack));
+//			.then(() => {pool4.end()});
+		}); //promise
 	}//store businesses
 	
+	/*
+	appt object:
+		timestamp	
+		userid	
+		yelpid	
+		location	
+		active
+	*/
 	function barBuilder(result, opts){
 		//TODO turn this into a PROMISE, and update any dependencies
 		return new Promise((resolve, reject)=>{
@@ -158,73 +173,96 @@ function BarsHandler () {
 						display_phone: result[i].display_phone	,
 						image_url: result[i].image_url,
 						url: result[i].url
-					});				
-				}
-			}
-			if(opts){	}
+					});
+					if(opts){
+						let leng = aggregator.length;
+						aggregator[(leng - 1)]["appt"] = result[i].appt;																		
+					}				
+				}//if current bar
+			}//for loop
+			if(opts){console.log(opts);}
 			resolve(aggregator);		
 		});
 	}//barBuilder
 	
 //	app.route('/bars/db')
-//	.get(isLoggedIn, barsHandler.getAppts)
-	
+//	.get(isLoggedIn, barsHandler.getAppts)	
 //	.post(isLoggedIn, barsHandler.addAppt)
 //	.delete(isLoggedIn, barsHandler.deleteAppt);
 
-	//search DB for bar data that user owns
-	//'GET' to /bars/db
+	//search DB for bar data that user owns//'GET' to /bars/db
 	this.getAppts = function (req, res) {
 		console.log('handler.server.js.getAppts');		
-		var pool = new pg.Pool(config);		
-		const text = 'SELECT * FROM appts WHERE userid = $1';
+		var pool = new pg.Pool(config);
+		//query for only active "true" appointments
+		const text = 'SELECT * FROM appts WHERE userid = $1 AND NOT active = false ';
 		const values = [];
-		const uid = req.user.id;
+		var uid = req.user.id;
 		values.push(uid);
 console.log(uid);				
 		pool.connect()
 		.then(client => {
 console.log('pg-connected: getAppts')
 			client.query(text,values, function (err, result){
-				var rc = result.rowCount;		
+				let rc = result.rowCount;		
 				client.release();
 				if(err){					
 					res.status(403);
-					console.log(err);
-					console.log("get appts error");
+			console.log(err);
+			console.log("get appts error");
 					res.json({barsFound: "none"});
 				}
 				if(rc == 0){
 					res.status(200);
 					res.json({barsFound: "none"});
 				} else {
-					//query yelp for the businesses
-					//TODO for each appt, get the business info from yelp								
-//					for(var r  = rc -1; r >= 0; r-- ){
-//						yelpSingle(result[r]);
-//						console.log(result[r]);
-//					}					
-//					//send the businesses
-//					res.status(200);
-//					console.log(result.rows);
-					
-//					var bodies;
-					
-//					const multiPass = result.rows.map(x => yelpSingle(x));
+					/*
+					var bodies;// = [];
+					var intervalT = 0;
 					var multiPass = result.rows.forEach( function (pgResp) {
-						yelpSingle(pgResp);
-//		console.log(pgResp);
-					});
+						let promToP;					
+						setTimeout(function(){
+							promToP = yelpSingle(pgResp, null);
+							if(bodies){								
+								bodies.push(promToP);
+							} else {
+								bodies = [];
+								bodies.push(promToP);
+							}
+						}, intervalT += 100);
+						console.log(intervalT);
+					});			
+					*/
+
+					const promiseSerial = funcs =>
+						funcs.reduce((promise, func) =>
+							promise.then(result => func().then(Array.prototype.concat.bind(result))),
+							Promise.resolve([])
+						);
+					// some url's to resolve
+					const urls = ['/url1', '/url2', '/url3'];
+//					var intervalT = 0;
+					// convert each url to a function that returns a promise
+					const funcs = result.rows.map(
+						pgResp => () => yelpSingle(pgResp, null)
+						//intervalT += 100);						
+					);
+					// execute Promises in serial
+//					promiseSerial(funcs)
+//						.then(console.log.bind(console))
+//						.catch(console.error.bind(console));					
 					
-					Promise.all(multiPass).then(pResults => {
-		console.log("multipass");
-						barBuilder(pResults);
+					
+//					Promise.all(bodies)
+					promiseSerial(funcs)					
+					.then(promies =>(barBuilder(promies, true)))
+					.then(builtBars => {
+						res.json(builtBars);
+						console.log("builtBarsVVVV");
+						console.log(builtBars);
 					})
-					.then(builtResults => {
-						res.json(builtResults);
-					})
-					.catch(e=>{console.log(e + "getappts");});					
-				
+					.catch(e=>{console.log(e + "loopy Loop");});	
+										
 				}
 			});
 		})
@@ -232,63 +270,90 @@ console.log('pg-connected: getAppts')
 		.then(() => pool.end());
 		
 
-		function yelpSingle(bizId, options){
+		function yelpSingle(appt, options){
+			/*
+			appt object:				
+				timestamp	
+				userid	
+				yelpid	
+				location	
+				active
+				_id
+			*/
 			 return new Promise((resolve, reject) => {
-				var bodyJSON;
-				const queryData = bizId;
-		console.log("query data is:   ");				
+//				console.log(appt);
+				var queryData = querystring.escape(appt.yelpid);
+//				var queryData = (appt.yelpid);
+				console.log("query data is:   " + queryData);
+				
+				var bodyJSON;						
 				var options = {
 					hostname: 'api.yelp.com',
 					port: 443,
-					path: '/v3/businesses/' + queryData,
+					path: ('/v3/businesses/' + queryData),
 					method: 'GET',
 					headers: {
-						'Authorization': ('Bearer ' + process.env.API_KEY)
+						'Authorization': ('Bearer ' + process.env.API_KEY),
+						'user-agent': 'clclarkFCC/1.0',
+						'Accept-Language': 'en-US',
+						'Accept-Encoding': 'gzip, deflate, br'
 					}
-				};		
-				const sreq = https.request(options, (resf) => {
-					let body1 = [];
-		console.log(`STATUS: ${res.statusCode}`);
-	//				console.log(`HEADERS: ${JSON.stringify(res.headers)}`);
-	//				res2.setEncoding('utf8');
-					resf.on('data', (d) => {				
-						body1.push(d);
-					 });
-					resf.on('end', () => {
-						try {
-							bodyJSON = JSON.parse(Buffer.concat(body1).toString());
-							resolve(bodyJSON);
-	//		console.log(bodyJSON);							
-						} catch (e) {
-							console.error(e.message);
-							reject(e);
-						}
-					});
+				};
+				
+				const yreq = https.request(options, (resf) => {
+					var body1 = [];
+					console.log(`STATUS: ${res.statusCode}` + "yelp Single");
+					console.log(`HEADERS: ${JSON.stringify(resf.headers)}`);
+//					resf.setEncoding('utf8');					
+					if(resf.headers["content-type"] == "application/json"){
+					
+						resf.on('data', (d) => {
+							body1.push(d);
+						 });
+						resf.on('end', () => {
+							try {
+	//							console.log(body1);
+								console.log("pre-parse");
+								let bodyJSON = JSON.parse(Buffer.concat(body1).toString());
+//								bodyJSON = concated.toJSON();								
+								console.log(">>>>post-parse");
+								//add original appointment data
+								bodyJSON["appt"] = appt;	
+								
+								console.log(JSON.stringify(bodyJSON).substring(0,20));
+								console.log("json body rec'd ***************");
+								
+								resolve(bodyJSON);
+							} catch (e) {
+								console.log(bodyJSON);
+								console.error(e.message);
+								reject(e);
+							}
+							
+						});
+					}//if content type
+					else{
+						resf.on('data', (d) => {
+							    process.stdout.write(d);
+						});
+						resf.on('end', () => {
+							reject("not json");	
+						});						
+					}
 				});		
-				sreq.on('error', (e) => { console.error(`problem with request: ${e.message}`); reject(e); });
-				sreq.end();				
+				yreq.on('error', (e) => { console.error(`problem with request: ${e.message}`); reject(e); });
+				yreq.end();	
 			 });//promise		
 		}//yelpSingle		
-/*
-		var idString = new String(req.user.github.id).substring(0,10);
-		Bars
-		.find({ $and: [{ "github.id": idString}, {'active': { $eq: true } } ]}, null, { sort: {date: -1}}, function (err, result) {
-			if (err) { throw err; }
-			var toSend = barBuilder(result);
-			console.log('handler.server.js.getBars ' + result.length);				
-			res.send(JSON.stringify(toSend));				
-		});
-*/
 	}//getAppts
 	
 	this.addAppt = function (req, res) {
 		var timeStamp = new String(req.query.date).substring(0,140) || null;
 		var yelpId = new String(req.query.bid).substring(0,100) || null;
-		var userId = new String(req.user.id).substring(0,140) || null; //arbitrary cut off
-		
+		var userId = new String(req.user.id).substring(0,140) || null; //arbitrary cut off		
 		// create a new user
-		const insertText = 'INSERT INTO appts(userid, yelpid, timestamp, location) '+
-			'VALUES($1, $2, $3, $4) '+
+		const insertText = 'INSERT INTO appts(userid, yelpid, timestamp, location, active) '+
+			'VALUES($1, $2, $3, $4, $5) '+
 //			'ON CONFLICT DO UPDATE ';
 			'RETURNING *';
 		const insertValues = [];
@@ -301,6 +366,7 @@ console.log('pg-connected: getAppts')
 //		} else{insertValues.push('null');}
 		do{	insertValues.push('{null}'); //ensure length
 		} while(insertValues.length < 4);
+		insertValues.push(true);
 		
 		//new postgresql connection
 		var pool3 = new pg.Pool(config);
@@ -309,36 +375,20 @@ console.log('pg-connected: getAppts')
 console.log('pg-connected2');
 			client2.query(insertText, insertValues, function (err, result){
 				client2.release();
-				if(err){
-					console.log(err);
-//					return done(err, null);
+				if(err){console.log(err);
+				res.sendStatus(404);
 				} else{
-console.log("inserted appt: " + result.rows[0]);
-					//format user
-//					var user = {	id: result.rows[0].id 	};					
-//					return done(err, user);
+					console.log("inserted appt: ");
+					console.log(result.rows[0]);
+					res.status(200);
+					res.json({
+						"appt-key": result.rows[0]['_id'], yelpid: result.rows[0].yelpid
+					});					
 				}
 			});//client.query
 		})
 		.catch(err => console.error('error connecting2', err.stack))
 		.then(() => pool3.end());
-
-		/*Bars
-		.findById(barToFind, {lean: false}, function (err, result){			
-			if(err) {throw err;}
-			//check if bar is active in the db
-			if(result.active == true){
-				var choicesArray = result.choiceList;
-				var choiceToPush = {choice: choiceString, owner: origin, votes: []};
-				choicesArray.push(choiceToPush);			
-				console.log("saved: " + result.save());
-				res.send(JSON.stringify(result));
-			}
-			else{
-				res.status(403);
-				res.json({bar: "not found"});
-			}
-		});*/
 		console.log('addAppt callback');
 	}//addAppt
 	
@@ -420,43 +470,49 @@ console.log("inserted appt: " + result.rows[0]);
 		*/
 	}
 
-	this.deleteBar = function (req, res) {
-		console.log("deleteBar callback");
-		/*// var mongoose = require('mongoose');				
-		var barToDel = new String(req.query.pid).substring(0,40);
-		var barKey = mongoose.Types.ObjectId(barToDel);
-		var adminObject = {};		
-		if(req.user.github.id == '16168260'){									
-		}
-		else{
-			var field = new String(req.user.github.id).substring(0,10);
-			adminObject['github.id'] = field;
-		}
-		Bars
-		.find({ $and: [{ "_id": barKey}, adminObject, {'active': { $eq: true } } ]}, function (err, result) {
-			console.log(req.user.github.id);
-			if(result.length > 0){
-				console.log('deleteBar callback' + JSON.stringify(result));
-				if (err) { res.sendStatus(404); }
-				var userId = new String(req.user.github.id).substring(0,10);
-				// console.log(result);
-				console.log(result[0]);
-				var barOwner = result[0].github.id;			
-				if(userId == barOwner || userId == '16168260'){
-					Bars.findByIdAndUpdate(barToDel, { $set: { active: false }},{lean: false}, function (err, dResult){			
-						if(err) {throw err;}
-						console.log(barToDel + " found and deleted");			
-						res.sendStatus(200);			
-					});		
-				}			
-				else{
-					res.sendStatus(403);
-				}						
-			}
-			else{
-				res.sendStatus(403);
-			}			
-		});	*/
+	this.deleteAppt = function (req, res) {
+
+		var apptId = new String(req.query.appt).substring(0,100) || null;
+		var userId = new String(req.user.id).substring(0,140) || null; //arbitrary cut off		
+		// create a new user
+		const insertText = 'UPDATE  appts SET active = false '+
+			"WHERE _id = \'" + apptId + "\' AND " +
+			" userid = \'" + userId + "\'" +
+			'RETURNING *';
+		/*		
+		const insertValues = [];
+		insertValues.push(userId); //id
+//		if(profile.displayName){ //displayName
+		insertValues.push(yelpId);
+//		} else{insertValues.push('null');}
+//		if(profile.gender){ //gender
+		insertValues.push(timeStamp);
+//		} else{insertValues.push('null');}
+		do{	insertValues.push('{null}'); //ensure length
+		} while(insertValues.length < 4);
+		insertValues.push(true);
+		*/
+		//new postgresql connection
+		let pool3 = new pg.Pool(config);
+		pool3.connect()
+		.then(client2 => {
+console.log('pg-connected5');
+			client2.query(insertText, function (err, result){
+				client2.release();
+				if(err){console.log(err);
+					res.status(403);
+					res.json({undefined: null});
+				} else{
+console.log("expired appt: "); console.log(result.rows[0]["_id"]);
+					res.status(200);
+					res.json({appt: "expired"});
+				}
+			});//client.query
+		})
+		.catch(err => console.error('error connecting2', err.stack))
+		.then(() => pool3.end());
+		console.log('deleteAppt callback');
+		
 	}//this.deleteBar
 
 	this.removeChoice = function (req, res) {

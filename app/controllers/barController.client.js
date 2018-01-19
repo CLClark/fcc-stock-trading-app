@@ -34,24 +34,32 @@ var MYLIBRARY = MYLIBRARY || (function () {
 				ajaxFunctions.ready(ajaxFunctions.ajaxRequest('GET', request, false, function (data) {
 					document.querySelector('#poll-view').innerHTML = "";
 					var barsFound = JSON.parse(data);
-		console.log(barsFound);					
-					functionCB(barsFound, 'poll-view', passedInFunction);
+		console.log(barsFound);		
+					//barFormer callback
+					functionCB(barsFound, 'poll-view', null, null);
+					passedInFunction();
+//					formerCB();
 				}));
 			};
 		});
 	},
-	barFormer : function(jsonData, parentIdString, passedInF) {
+	barFormer : function(jsonData, parentIdString, optionsBF, cb) {
+		let pollView = document.getElementById(parentIdString);  //ul		
+		if(pollView.hasChildNodes()){
+			while (pollView.firstChild) {
+				pollView.removeChild(pollView.firstChild);
+			}
+		}
 		//turn json into html elements
 		for(var i = 0; i < jsonData.length; i++){
 			//create a div for each poll
 			var pId = ("poll-").concat(i);
-			var jone = jsonData[i];
-			var pollView = document.getElementById(parentIdString);  //ul     
-			addElement(pId, pollView, jone, null);			
+			var jone = jsonData[i];						
+			addElement(pId, pollView, jone, optionsBF, cb);			
 		}
-		if(passedInF !== null){
-			passedInF();	
-		}		
+//		if(passedInF !== null){
+//			passedInF();	
+//		}		
 	            function addElement (divName, parent, polljone, options) {
 	                      var pollCopy = JSON.parse(JSON.stringify(polljone));
 	                      var pollChoices = pollCopy.pollData;
@@ -154,15 +162,45 @@ var MYLIBRARY = MYLIBRARY || (function () {
 	                         newDiv.setAttribute("poll-key", polljone.id);
 	                         newDiv.setAttribute("poll-title", polljone.title);
 	                         newDiv.setAttribute("poll-data", JSON.stringify(polljone.pollData));
+	                         
+	                         //if we're making an "Appointment" element, add the info
+	                         if(polljone.appt){
+	                    	     newDiv.setAttribute("appt-key", polljone.appt["_id"]);
+		                         newDiv.setAttribute("appt-time", polljone.appt["timestamp"]);
+		                         let thisDate = new Date(Date.parse(polljone.appt["timestamp"]));
+		                         let dayForm = "";
+		                         switch (thisDate.getDay()) {
+		                           case 0:	dayForm = "Sunday";	break;		                           
+		                           case 1:	dayForm = "Monday";	break;
+		                           case 2:	dayForm = "Tuesday";	break;
+		                           case 3:	dayForm = "Wednesday";	break;
+		                           case 4:	dayForm = "Thursday";	break;
+		                           case 5:	dayForm = "Friday";	break;
+		                           case 6:	dayForm = "Saturday";	break;
+		                           default: dayForm = "";
+		                         }
+		                         showTextMaker(( dayForm));
+		                         
+	                         }
+	                         
 	                      newWrap.appendChild(newDiv);
-
-	                      var showText = document.createElement("span");
-	                         showText.id = "show-text";
-	                         showText.innerHTML = "Click for Results...";
-	                         showText.style = "color";
-	                      newWrap.appendChild(showText);  
-
-	                      //add-choice button
+	                      
+	                      function showTextMaker(inner){
+	                    	  
+	                    	  var showText = document.createElement("span");
+		                         showText.id = "show-text";
+//		                         showText.className = "u-text-subtle";
+		                         if(inner){
+		                    	     showText.innerHTML = inner;
+		                         }
+		                         else{
+		                    	     showText.innerHTML = "click to book...";		                    	     
+		                         }		                         
+		                         showText.style = "color";
+		                      newWrap.appendChild(showText);		                      
+	                      }
+  /*
+	                     // add-choice button
 	                      var newChoice = document.createElement("div");
 	                      newChoice.className = ("add-choice");
 	                         var actionChoice = document.createElement('a');
@@ -173,14 +211,19 @@ var MYLIBRARY = MYLIBRARY || (function () {
 	                         actionChoice.appendChild(choiceBtn);
 	                         newChoice.appendChild(actionChoice);
 	                      contDiv.appendChild(newChoice);              
+*/
 
 	       	     //add++i to poll-view ul               
 	                      if(options == null){
-	                 	     document.getElementById('poll-view').appendChild(newWrapSup);     
-	                      }else{               //options variant (replace existing node)?          	     
-	                 	     var oldNode = document.getElementById("poll-wrap-sup-"+ options);          	     
-	                 	     var pareNode = oldNode.parentNode;
-	                 	     pareNode.replaceChild(newWrapSup, oldNode);
+	                    	  showTextMaker(false);
+	                    	  parent.appendChild(newWrapSup);     
+	                      }
+	                      else{	                    	  
+	                    	  newWrapSup.className =  newWrapSup.className + options.classText;
+	                    	  parent.appendChild(newWrapSup);
+	                      }
+	                      if(cb !== null){
+	                    	  try{cb();}catch(TypeError){console.log("no cb provided");}	  
 	                      }
 	                   } //add element
 	},//barFormer

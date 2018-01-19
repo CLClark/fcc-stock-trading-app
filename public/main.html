@@ -14,7 +14,7 @@
 
 	<script type="text/javascript">
 		MYLIBRARY.init([MYLIBRARY.barFormer, null, null]);	
-		AUTHLIB.init([MYLIBRARY.barFormer,"twitter widget cb", null]);
+		AUTHLIB.init([MYLIBRARY.barFormer,false, AUTHLIB.authScript]);
 	</script>
 </head>
 
@@ -56,11 +56,12 @@
 	</div>	
 </body>
 <footer>		
-	<script type="text/javascript">
-		MYLIBRARY.barProducer(AUTHLIB.chooser);
+	<script type="text/javascript">		
 		AUTHLIB.navi();
-		AUTHLIB.fbControl();
-		AUTHLIB.authScript();		
+		/* AUTHLIB.fbControl();*/
+		AUTHLIB.authScript(true);
+		MYLIBRARY.barProducer(AUTHLIB.chooser);
+		/* MYLIBRARY.barProducer(AUTHLIB.chooser); */
 	</script>
 </footer>
 

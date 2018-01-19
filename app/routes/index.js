@@ -11,7 +11,8 @@ module.exports = function (app, passport) {
 			return next();
 		} else {
 			console.log('is auth failed');			
-			res.redirect('/login');
+			res.status(403);
+			res.json({note: "Must Log In"});	
 		}
 	}
 	function isAuthed(req, res, next){		
@@ -87,8 +88,8 @@ module.exports = function (app, passport) {
 	
 	app.route('/bars/db')
 		.get(isLoggedIn, barsHandler.getAppts)
-		.post(isLoggedIn, barsHandler.addAppt);
-//		.delete(isLoggedIn, barsHandler.deleteAppt);
+		.post(isLoggedIn, barsHandler.addAppt)
+		.delete(isLoggedIn, barsHandler.deleteAppt);
 
 //	app.route('/polls/votes')
 //		.delete(isLoggedIn, pollsHandler.removeChoice)

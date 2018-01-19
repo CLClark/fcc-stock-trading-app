@@ -1,7 +1,7 @@
 'use strict';
 
 var AUTHLIB = AUTHLIB || (function () {
-	var randCb;
+	var divCB;
 	var extScript;
 	var authScriptCB;
 	var apiAuth = appUrl + '/auth/check';
@@ -19,7 +19,7 @@ var AUTHLIB = AUTHLIB || (function () {
 	return{
 		init : function(Args) {
 			_args = Args;
-			randCb = _args[0];
+			divCB = _args[0];
 			extScript = _args[1] || null; //callback for external script
 			authScriptCB = _args[2] || null;			
 			// some other initialising
@@ -62,8 +62,20 @@ var AUTHLIB = AUTHLIB || (function () {
 			var clock = document.getElementById('clock-time') || null;			
 			function makeClock(){
 				
-				var now = new Date(Date.now());	
-				return now.toLocaleString();
+				var now = new Date(Date.now());				
+				let dayForm = "";
+				switch (now.getDay()) {
+		                           case 0:	dayForm = "Sunday";	break;		                           
+		                           case 1:	dayForm = "Monday";	break;
+		                           case 2:	dayForm = "Tuesday";	break;
+		                           case 3:	dayForm = "Wednesday";	break;
+		                           case 4:	dayForm = "Thursday";	break;
+		                           case 5:	dayForm = "Friday";	break;
+		                           case 6:	dayForm = "Saturday";	break;
+		                           default: dayForm = "";
+				}		                           
+//				return (now.toLocaleString() + "<br>" + "tonight, " +dayForm);
+				return (now.toUTCString());
 			}
 			
 			if(apiIcon !== null){
@@ -110,46 +122,6 @@ var AUTHLIB = AUTHLIB || (function () {
 			}
 
 			window.fbAsyncInit = function() {
-//				FB.init({
-//					appId      : '580452925653250',
-//					cookie     : true,  // enable cookies to allow the server to access 
-//					// the session
-//					xfbml      : true,  // parse social plugins on this page
-//					version    : 'v2.8' // use graph api version 2.8
-//				});
-
-				// Now that we've initialized the JavaScript SDK, we call 
-				// FB.getLoginStatus().  This function gets the state of the
-				// person visiting this page and can return one of three states to
-				// the callback you provide.  They can be:
-				//
-				// 1. Logged into your app ('connected')
-				// 2. Logged into Facebook, but not your app ('not_authorized')
-				// 3. Not logged into Facebook and can't tell if they are logged into
-				//    your app or not.
-				//
-				// These three cases are handled in the callback function.
-
-//				FB.getLoginStatus(function(response) {
-//					statusChangeCallback(response);
-//				});
-				
-				// In your onload method:
-//				FB.Event.subscribe('auth.login', login_event);
-//				FB.Event.subscribe('auth.logout', logout_event);
-//
-//				// In your JavaScript code:
-//				var login_event = function(response) {
-//				  console.log("login_event");
-////				  console.log(response.status);
-////				  console.log(response);
-//				}
-//
-//				var logout_event = function(response) {
-//				  console.log("logout_event");
-//				  console.log(response.status);
-//				  console.log(response);
-//				}
 			};
 
 			// Load the SDK asynchronously
@@ -168,37 +140,67 @@ var AUTHLIB = AUTHLIB || (function () {
 					var authObj = JSON.parse(data);
 					console.log(authObj);
 				}));				
-//				FB.api('/me', function(response) {
-//					console.log('Successful login for: ' + response.name);
-//					cb();
-////					document.getElementById('status').innerHTML = 'Thanks for logging in, ' + response.name + '!';					
-//				});
+//			
 			}	  				  
 		},
 		
 		chooser : function(passedInFn){
 			var cButtons = document.querySelectorAll(".poll-wrap-sup") || null;				
-			for (var cButton of cButtons) {							
-				cButton.setAttribute("style","background-color: green");
-				//add a new choice to an existing poll
-				cButton.addEventListener('click', function () {
-//					var choiceText = prompt("Type your choice here");
-//					while(choiceText.length > 140){
-//						choiceText = prompt("Choice is too long. (Too many characters, 140 max). Reenter choice:", choiceText);
-//					}
-//					if(choiceText !== "" && choiceText !== null){
-						var today = new Date();
-						var keyName = this.querySelector('.poll-view-list-poll');
-						console.log(keyName.getAttribute("poll-key"));
-						ajaxFunctions.ajaxRequest('POST', '/bars/db?date=' + today.toISOString() + "&" + "bid=" + keyName.getAttribute("poll-key"), false, function (error, response) {
-							 window.location.reload(true);
-						});
-//					}
-				}, false);
-			}
+			for (var cButton of cButtons) {
+				if(cButton.className !== "poll-wrap-sup appt-wrap-sup"){
+					//add a new choice to an existing poll					
+					cButton.addEventListener('click', clickHandle.bind(cButton), false);//click listener					
+				}//classname check
+			}//loop
+			
+			function clickHandle() {
+				var today = new Date();
+				var keyName = this.querySelector('.poll-view-list-poll');
+//				console.log(keyName.getAttribute("poll-key"));						
+				let that = this;
+				that.querySelector("#show-text").innerHTML = "please hold...";
+				if(!that.hasAttribute("appt-key")){//if app key check					
+					ajaxFunctions.ajaxRequest('POST', '/bars/db?date=' + today.toISOString() + "&" + "bid=" + keyName.getAttribute("poll-key"), false, function (response) {
+						let respJSON = JSON.parse(response);
+						
+						if(respJSON.hasOwnProperty("note")){
+							that.querySelector("#show-text").innerHTML = "please sign in to book...";
+							that.removeEventListener('click', clickHandle);
+						}
+						else{
+							that.setAttribute("style","border-color: #ebc074; background-color: #f5deb7");								
+							that.querySelector("#show-text").innerHTML = "booked!";
+							that.querySelector("#show-text").setAttribute("style","color: #f15c00");
+						}
+						if(keyName.getAttribute("poll-key") == respJSON["yelpid"]){
+							that.setAttribute("appt-key", respJSON["appt-key"]);//									
+						}//if keys match
+						authScriptCB(false);
+					});//ajax
+				}else{
+					deleteCB(that);
+				}//else
+				
+				function deleteCB(arg) {
+					var keyS = arg.getAttribute("appt-key");
+					var titleS = arg.title;
+					arg.setAttribute("style","border-color: unset; background-color: unset");
+					 let zat = arg;
+//					 if(confirmDel == true){
+					 ajaxFunctions.ajaxRequest('DELETE', '/bars/db?appt=' + keyS, false, function (response2) {
+//						 document.querySelectorAll(".appt-wrap-sup").querySelector();
+//						 zat.parentNode.parentNode.setAttribute("style","display: none");
+						 zat.querySelector("#show-text").innerHTML = "click to book...";
+						 zat.querySelector("#show-text").setAttribute("style","");
+						 zat.removeAttribute("appt-key");
+						 authScriptCB(false);
+					 });
+//					 }
+				}//deleteCB function			
+			}//function
 		},
 		
-		authScript : function(passedInFn){
+		authScript : function(zipIt){
 
 			//var naviContainer = document.getElementById('navi') || null;
 			//var authContainer = document.getElementById('auth-container') || null;			
@@ -224,7 +226,7 @@ var AUTHLIB = AUTHLIB || (function () {
 
 			function makeDefaultDiv(){
 				var newSpan = document.createElement("div");
-
+				newSpan.id = "login-nav";
 				var aPro = document.createElement("a");
 //				aPro.href = "/auth/facebook";		
 				var aLog = document.createElement("div");
@@ -244,28 +246,52 @@ var AUTHLIB = AUTHLIB || (function () {
 				return newSpan;				
 				
 			}
+			//resets navigator placeholder when a new auth call is made
+			function resetNavi(){
+				var resetSpan = document.createElement("span");
+				resetSpan.id = "auth-container";
+				return resetSpan;
+			}			
 
 			ajaxFunctions.ready(ajaxFunctions.ajaxRequest('GET', apiAuth, false, function (data) {
 				
+				//reset navi for new auth call
+				let resetAttempt = document.querySelector("#login-nav");
+				let resetApptsList = document.querySelector("#appts-view");
+				if(resetAttempt!==null){
+					resetAttempt.replaceWith(resetNavi());
+				}
+				if(resetApptsList.hasChildNodes()){
+					while (resetApptsList.firstChild) {
+						resetApptsList.removeChild(resetApptsList.firstChild);
+					}
+				}
 				var authObj = JSON.parse(data);				
 				var authNode = document.getElementById('auth-container');
 				var reg = new RegExp('^(\\d\\d\\d\\d\\d)$');				
-				if(reg.test(authObj.zipStore)){
+				if(reg.test(authObj.zipStore)  && zipIt){					
 					var keyup = new Event('keyup'); 
 					document.querySelector('#zipSearch').value = authObj.zipStore;
 					document.querySelector('input#zipSearch').dispatchEvent(keyup);
 				}
 
 				if(authObj.authStatus == true){
-					authNode.replaceWith(makeDiv());
+					authNode.replaceWith(makeDiv()); //login header placement
 					
+					let tempText = document.querySelector("#appts-text");					
+					if(tempText!==null){
+						tempText.replaceWith(makeAppts("Loading..."));						
+					} else {
+						document.querySelector("#profile-container").appendChild(makeAppts(""));
+					}					
 					apptFind();
 //					addChoiceListener();
 					
-					if(location.pathname !== "/"){	
+					if(location.pathname !== "/"){
 					}					
 				}
 				else if(authObj.authStatus == false){
+//					loginPrompt();
 					//var randomNode2 = document.getElementById('auth-container');
 					if(authNode !== null){
 						authNode.replaceWith(makeDefaultDiv());
@@ -274,32 +300,110 @@ var AUTHLIB = AUTHLIB || (function () {
 						});						
 					}
 				}				
-			}));	
-									
+			}));
+			/*
+			function loginPrompt(){
+				var cButtons = document.querySelectorAll(".poll-wrap-sup") || null;				
+				for (var cButton of cButtons) {
+					if(cButton.className !== "poll-wrap-sup appt-wrap-sup"){
+						//add a new choice to an existing poll					
+							
+					}//classname check
+				}//loop
+			}
+			*/						
 			function makeAppts(addText){
-				var newSpanTxt = document.createElement("h4");
+				var newSpanTxt = document.createElement("h3");
+//				newSpanTxt.className = "alternate";
 				newSpanTxt.id = "appts-text";				
 				newSpanTxt.innerHTML = "My Appointments: " + addText;				
 				return newSpanTxt;
 			}
 			
-			function apptFind() {				
+			//query server for my appointments
+			function apptFind() {
 				//appointment functions
 				var proCon = document.querySelector("#profile-container") || null;				
-				var request = ( '/bars/db' );  
-				ajaxFunctions.ready(ajaxFunctions.ajaxRequest('GET', request, false, function (data) {					
+				var request = ( '/bars/db' );				
+				ajaxFunctions.ready(ajaxFunctions.ajaxRequest('GET', request, false, function (data) {
 					var apptsFound = JSON.parse(data);
 					console.log(apptsFound);
+					document.querySelector("#appts-text").remove(); //remove placeholder
 					if(apptsFound.barsFound !== "none"){
 						proCon.setAttribute("style", "display: unset");
-						proCon.appendChild(makeAppts());
-						randCb(apptsFound, 'appts-view', null);	
-					} else {
+						proCon.insertBefore(makeAppts(""), document.querySelector("#appts-view"));
+						//third arg is div class //divCB is called within barFormer.addElement
+						divCB(apptsFound, "appts-view", {"classText": " appt-wrap-sup"}, null);
+						addDeleteDiv();
+					} else {						
 						proCon.setAttribute("style", "display: unset");
 						proCon.appendChild(makeAppts("none found"));
+//						if(passedInFn){
+//							passedInFn(apptsFound, "appts-view", {"classText": " appt-wrap-sup"}, null);
+//						}
 					}
+					
 				}));
 			};
+			
+			function addDeleteDiv(){
+
+				var pWrapSup = document.querySelectorAll(".appt-wrap-sup") || null;
+				for (var pWrapper of pWrapSup) {
+					if(pWrapper.querySelector(".delete-poll") == null){
+						var deletePoll = document.createElement("div");
+						deletePoll.className = ("delete-poll");
+						 var actionDel = document.createElement('a');
+						var pollDataDiv = pWrapper.querySelector(".poll-view-list-poll");
+						var keyOfPoll = pollDataDiv.getAttribute("appt-key");
+						var titleOfPoll = pollDataDiv.getAttribute("poll-title");
+						actionDel.setAttribute("appt-key", keyOfPoll);
+						actionDel.setAttribute("title", titleOfPoll);
+						    var pollDel = document.createElement('div');
+						    pollDel.className = "btn delete-btn";
+						    pollDel.id = "delete-btn";
+						    pollDel.innerHTML = "<span class=\"del-text\">unbook?</span>";
+						    pollDel.setAttribute("style","margin: auto;");
+						 actionDel.appendChild(pollDel);
+						 deletePoll.appendChild(actionDel);
+						pWrapper.appendChild(deletePoll);	
+	
+						actionDel.addEventListener('click', deleteCB.bind(actionDel), false);
+						
+						function deleteCB() {
+							var keyS = this.getAttribute("appt-key");
+							var titleS = this.title;
+							 var confirmDel = confirm("Expire your appointment: " + titleS + "?");
+							 let that = this;
+							 if(confirmDel == true){
+//							 	window.addEventListener("unload", function(){
+								    ajaxFunctions.ajaxRequestLim('DELETE', '/bars/db?appt=' + keyS, 0, function (err, response) {
+									    if(err){ console.log("request error \'delete\'");}
+									    else{
+	//									    document.querySelectorAll(".appt-wrap-sup").querySelector();
+										    let nodeToRemove = that.parentNode.parentNode;
+										    if(nodeToRemove.className == "poll-wrap-sup appt-wrap-sup") {
+											   let nPare = nodeToRemove.parentNode;
+											   nPare.removeChild(nodeToRemove);
+										    }
+										    let pollRoot = document.querySelector("#poll-view");
+										    let resetThis = pollRoot.querySelector("div[appt-key='"+ keyS + "']");
+										    //existing super-bar node
+										    if(resetThis !== null){
+											    resetThis.setAttribute("style","");
+											    resetThis.querySelector("#show-text").innerHTML = "click to book...";
+											    resetThis.querySelector("#show-text").setAttribute("style","");
+											    resetThis.removeAttribute("appt-key");										    
+										    }
+									    }//else err
+								    });
+//							    });							 
+//							    window.location.reload(true);
+							 }   
+						}
+					}//has .delete div child
+				}
+			}
 
 			/*function addChoiceListener(){
 				var cButtons = document.querySelectorAll(".poll-wrap-sup") || null;				
@@ -329,43 +433,6 @@ var AUTHLIB = AUTHLIB || (function () {
 					cButton.addEventListener('click', function () {
 						var choiceText = alert("Sign-in to add a choice");					
 					}, false);
-				}
-			}
-
-			function addDeleteDiv(){
-
-				var pWrapSup = document.querySelectorAll(".poll-wrap-sup") || null;
-				for (var pWrapper of pWrapSup) {
-					if(pWrapper.id != "dummy"){
-						var deletePoll = document.createElement("div");
-						deletePoll.className = ("delete-poll");
-						 var actionDel = document.createElement('a');
-						var pollDataDiv = pWrapper.querySelector(".poll-view-list-poll");
-						var keyOfPoll = pollDataDiv.getAttribute("poll-key");
-						var titleOfPoll = pollDataDiv.getAttribute("poll-title");
-						actionDel.setAttribute("poll-key", keyOfPoll);
-						actionDel.setAttribute("title", titleOfPoll);
-						    var pollDel = document.createElement('div');
-						    pollDel.className = "btn delete-btn";
-						    pollDel.id = "delete-btn";
-						    pollDel.innerHTML = "Delete Poll";
-						 actionDel.appendChild(pollDel);
-						 deletePoll.appendChild(actionDel);
-						pWrapper.appendChild(deletePoll);	
-	
-						actionDel.addEventListener('click', function () {
-							var keyS = this.getAttribute("poll-key");
-							var titleS = this.title;
-							 var confirmDel = confirm("Delete Poll: " + titleS + "?");                     
-							 if(confirmDel == true){
-							 	window.addEventListener("unload", function(){
-								    ajaxFunctions.ajaxRequest('DELETE', '/polls/db?pid=' + keyS, false, function (error, response) {						    	
-								    });
-							    });
-							    window.location.reload(true);
-							 }   
-						}, false);
-					}
 				}
 			}
 
