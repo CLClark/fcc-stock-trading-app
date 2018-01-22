@@ -33,18 +33,13 @@ ready: function ready (fn) {
 		var xmlhttp = new XMLHttpRequest();
 		
 		xmlhttp.timeout = timeout;
-		xmlhttp.ontimeout = function () {			
+		xmlhttp.ontimeout = function () {
 			let err = "timeout";
 			callback(err, null);
 			//remove global statusifier
 			removeIt(xhrTrack);
 			console.error("The request for " + url + " timed out.");
 		};		
-		//global statusifier
-		var xhrTrack = document.createElement("data");
-		xhrTrack.id	 = "xhr-track";
-		xhrTrack.value = url;
-		document.documentElement.appendChild(xhrTrack);
 		
 		function removeIt(childN){
 			console.log(document.getElementById("xhr-track"));
@@ -52,15 +47,25 @@ ready: function ready (fn) {
 			console.log(document.getElementById("xhr-track"));
 		}
 		function checkIt(str){
-			if(document.querySelector(str != null)){
-				console.log("node present");
+			if(document.querySelector(str) !== null){
+				console.log("node present");	
 				return true;
-			}else{
+			}else{				
+				console.log("node absent");	
 				return false;
 			}
 		}
-		
+		if(checkIt("#xhr-track")){
+			callback("request aborted: please wait for response", null);
+			xmlhttp.abort();
+		}
 		if(!checkIt("#xhr-track")){
+			//global statusifier
+			var xhrTrack = document.createElement("data");
+			xhrTrack.id	 = "xhr-track";
+			xhrTrack.value = url;
+			document.documentElement.appendChild(xhrTrack);
+
 			xmlhttp.onreadystatechange = function () {
 				if (xmlhttp.readyState === 4 && xmlhttp.status === 200) {
 					callback(null, xmlhttp.response);

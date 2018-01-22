@@ -10,7 +10,6 @@ var parse = require('pg-connection-string').parse;
 var config = parse(process.env.DATABASE_URL);
 config.ssl = true;
 
-//var https = require('https');
 var http = require('http');
 
 var app = express();
@@ -30,20 +29,12 @@ app.use(session({
 	}),
 	secret: process.env.ZOO_COOKIE_SECRET,
 	resave: false,
-	cookie: { maxAge: 30 * 24 * 60 * 60 * 1000 }, // 30 days
+	cookie: { maxAge: 2 * 24 * 60 * 60 * 1000 }, // 2 days
 	saveUninitialized: true
 }));
 
 app.use(passport.initialize());
 app.use(passport.session());
-
-//app.use(function (req, res, next) {
-//	res.setHeader('Access-Control-Allow-Origin', '*');
-//	res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE');
-//	res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
-//	res.setHeader('Access-Control-Allow-Credentials', true);
-//	next();
-//});
 
 routes(app, passport);
 var port = process.env.PORT || 8080;

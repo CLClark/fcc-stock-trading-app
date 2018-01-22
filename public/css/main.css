@@ -90,11 +90,16 @@ header a ~ p {
 	flex-direction: column;
 	justify-content: center;
 	flex: 3;
-	padding-right: 20%
+	padding-right: 20%;
 }
 
 #clock{
 	text-align: center;
+}
+
+#events-sup{
+  display: flex;
+  flex-direction: row;
 }
 
 /****** Login Styling ******/
@@ -127,6 +132,26 @@ header a ~ p {
 .btn > img {
 	float: left;
 	margin-left: 10px
+}
+
+#loading {
+  width: 100%;
+  height: 100%;
+  top: 0;
+  left: 0;
+  position: fixed;
+  display: block;
+  opacity: 0.7;
+  background-color: #fff;
+  z-index: 99;
+  text-align: center;
+}
+
+#loading-image {
+ position: absolute;
+ top: 100px;
+ left: 240px;
+ z-index: 100;
 }
 
 /****** Logo Div Styling ******/
@@ -255,6 +280,10 @@ span {
 
 
 /******* poll styles **********/
+#pollDb{
+  flex: 1;
+}
+
 #appts-view{
 	padding: 10px 5% 10px 5%;
 	background-color: #0073bb;
@@ -309,11 +338,15 @@ span {
 	text-overflow: clip;
 }
 
+.poll-view-list{
+  padding: 30px 5% 10px 5%;
+}
 
 ul.poll-view-list, #profile-container{
 	list-style-type: none;
 	padding-right: 5%;
-	padding-left: 5%;
+  padding-left: 5%;
+  flex:1;
 }
 
 .poll-view-list-poll{

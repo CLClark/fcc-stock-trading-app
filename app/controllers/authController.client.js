@@ -85,45 +85,11 @@ var AUTHLIB = AUTHLIB || (function () {
 				  clock.innerHTML = makeClock();
 				}				
 			}
+
 		},
 		
-		fbControl : function(cb){ 
-			
-			// This is called with the results from from FB.getLoginStatus().
-			function statusChangeCallback(response) {
-				console.log('statusChangeCallback');
-				console.log(response);
-				// The response object is returned with a status field that lets the
-				// app know the current login status of the person.
-				// Full docs on the response object can be found in the documentation
-				// for FB.getLoginStatus().				
-				if (response.status === 'connected') {
-					// Logged into your app and Facebook.
-//					testAPI(appUrl +"/auth/facebook");					
-				} else if (response.status === 'not_authorized') {
-					document.getElementById('status').innerHTML = 'FB authorized ' +
-					'app: not_authorized.';
-//					testAPI(appUrl +"/auth/facebook");		
-				} else {
-					// The person is not logged into your app or we are unable to tell.
-					document.getElementById('status').innerHTML = 'Please log ' +
-					'into this app.';
-//					testAPI(appUrl +"/auth/facebook");
-				}
-			}	
-
-			// This function is called when someone finishes with the Login
-			// Button.  See the onlogin handler attached to it in the sample
-			// code below.
-			function checkLoginState() {
-				FB.getLoginStatus(function(response) {
-					statusChangeCallback(response);
-				});
-			}
-
-			window.fbAsyncInit = function() {
-			};
-
+		fbControl : function(cb){
+			window.fbAsyncInit = function() {};
 			// Load the SDK asynchronously
 			(function(d, s, id) {
 				var js, fjs = d.getElementsByTagName(s)[0];
@@ -133,15 +99,6 @@ var AUTHLIB = AUTHLIB || (function () {
 				fjs.parentNode.insertBefore(js, fjs);
 			}(document, 'script', 'facebook-jssdk'));
 
-			// Here we run a very simple test of the Graph API after login is
-			// successful.  See statusChangeCallback() for when this call is made.
-			function testAPI(apiPath) {
-				ajaxFunctions.ready(ajaxFunctions.ajaxRequest('GET', apiPath , false, function (data) {					
-					var authObj = JSON.parse(data);
-					console.log(authObj);
-				}));				
-//			
-			}	  				  
 		},
 		
 		chooser : function(passedInFn){
@@ -153,31 +110,41 @@ var AUTHLIB = AUTHLIB || (function () {
 				}//classname check
 			}//loop
 			
+			/*			Search Result bar clicks (add and remove)			*/
 			function clickHandle() {
 				var today = new Date();
 				var keyName = this.querySelector('.poll-view-list-poll');
 //				console.log(keyName.getAttribute("poll-key"));						
 				let that = this;
 				that.querySelector("#show-text").innerHTML = "please hold...";
-				if(!that.hasAttribute("appt-key")){//if app key check					
-					ajaxFunctions.ajaxRequest('POST', '/bars/db?date=' + today.toISOString() + "&" + "bid=" + keyName.getAttribute("poll-key"), false, function (response) {
+				//if "app key" check
+				if(!that.hasAttribute("appt-key")){
+					//post server for 'this' bar and 'today'
+					ajaxFunctions.ajaxRequestLim('POST', '/bars/db?date=' + today.toISOString() + "&" + "bid=" + keyName.getAttribute("poll-key"), 10000,
+					function (err, response) {
 						let respJSON = JSON.parse(response);
 						
-						if(respJSON.hasOwnProperty("note")){
-							that.querySelector("#show-text").innerHTML = "please sign in to book...";
+						if(respJSON == null || err){
+							that.querySelector("#show-text").innerHTML = "click to book...";
+							alert("please wait...");
 							that.removeEventListener('click', clickHandle);
+							return;
 						}
 						else{
 							that.setAttribute("style","border-color: #ebc074; background-color: #f5deb7");								
 							that.querySelector("#show-text").innerHTML = "booked!";
-							that.querySelector("#show-text").setAttribute("style","color: #f15c00");
+							that.querySelector("#show-text").setAttribute("style","color: #f15c00");						
+							//if keys match
+							if(keyName.getAttribute("poll-key") == respJSON["appt"]["yelpid"]){
+								//append the new "appt-key" to this bar div
+								that.setAttribute("appt-key", respJSON["appt"]["_id"]);									
+							}
 						}
-						if(keyName.getAttribute("poll-key") == respJSON["yelpid"]){
-							that.setAttribute("appt-key", respJSON["appt-key"]);//									
-						}//if keys match
-						authScriptCB(false);
+						//execute AUTHLIB.authScript(false) as a cb
+						authScriptCB(false); 
 					});//ajax
 				}else{
+					//click action to "unbook" this bar
 					deleteCB(that);
 				}//else
 				
@@ -187,18 +154,24 @@ var AUTHLIB = AUTHLIB || (function () {
 					arg.setAttribute("style","border-color: unset; background-color: unset");
 					 let zat = arg;
 //					 if(confirmDel == true){
-					 ajaxFunctions.ajaxRequest('DELETE', '/bars/db?appt=' + keyS, false, function (response2) {
-//						 document.querySelectorAll(".appt-wrap-sup").querySelector();
-//						 zat.parentNode.parentNode.setAttribute("style","display: none");
+					 ajaxFunctions.ajaxRequest('DELETE', '/bars/db?appt=' + keyS, false, function (response2) {						
+						// while (resetApptsList.firstChild) {
+						// 	resetApptsList.removeChild(resetApptsList.firstChild);
+						// }											
+						let pareOut = document.querySelector("#appts-view");//.querySelectorAll(".poll-view-list-poll");
+						pareOut.removeChild(pareOut.querySelector('[appt-key=\"' + keyS +'\"').parentNode.parentNode.parentNode);
+
+//						zat.parentNode.parentNode.setAttribute("style","display: none");
 						 zat.querySelector("#show-text").innerHTML = "click to book...";
 						 zat.querySelector("#show-text").setAttribute("style","");
 						 zat.removeAttribute("appt-key");
+						 //execute AUTHLIB.authScript(false) as a cb
 						 authScriptCB(false);
 					 });
 //					 }
 				}//deleteCB function			
-			}//function
-		},
+			}// clickHandle function
+		},//chooser
 		
 		authScript : function(zipIt){
 
@@ -257,19 +230,16 @@ var AUTHLIB = AUTHLIB || (function () {
 				
 				//reset navi for new auth call
 				let resetAttempt = document.querySelector("#login-nav");
-				let resetApptsList = document.querySelector("#appts-view");
+				//TODO adjust these... resets to respond to server
+				
 				if(resetAttempt!==null){
 					resetAttempt.replaceWith(resetNavi());
-				}
-				if(resetApptsList.hasChildNodes()){
-					while (resetApptsList.firstChild) {
-						resetApptsList.removeChild(resetApptsList.firstChild);
-					}
-				}
+				}				
+
 				var authObj = JSON.parse(data);				
 				var authNode = document.getElementById('auth-container');
 				var reg = new RegExp('^(\\d\\d\\d\\d\\d)$');				
-				if(reg.test(authObj.zipStore)  && zipIt){					
+				if(reg.test(authObj.zipStore)  && zipIt){ //zipIt prevents search when authScript called elsewhere
 					var keyup = new Event('keyup'); 
 					document.querySelector('#zipSearch').value = authObj.zipStore;
 					document.querySelector('input#zipSearch').dispatchEvent(keyup);
@@ -277,21 +247,34 @@ var AUTHLIB = AUTHLIB || (function () {
 
 				if(authObj.authStatus == true){
 					authNode.replaceWith(makeDiv()); //login header placement
-					
-					let tempText = document.querySelector("#appts-text");					
-					if(tempText!==null){
-						tempText.replaceWith(makeAppts("Loading..."));						
-					} else {
-						document.querySelector("#profile-container").appendChild(makeAppts(""));
-					}					
+					if(document.querySelector("#appts-text") == null){
+						document.querySelector("#profile-container").insertBefore(makeAppts("My Appointments:"),document.querySelector("#appts-view"));
+						
+					}
+					let refresher = document.querySelector('#fresh-appts');
+					if(refresher !== null){
+						refresher.addEventListener('click', () => {
+							//resets all visible appts
+							let resetApptsList = document.querySelector("#appts-view");
+							if(resetApptsList.hasChildNodes()){
+								while (resetApptsList.firstChild) {
+									resetApptsList.removeChild(resetApptsList.firstChild);
+								}
+							}else{
+								authScriptCB(false);
+							}
+							
+						}, false);
+					}
 					apptFind();
-//					addChoiceListener();
-					
-					if(location.pathname !== "/"){
-					}					
+//					addChoiceListener();					
+					// if(location.pathname !== "/"){
+					// }					
 				}
 				else if(authObj.authStatus == false){
 //					loginPrompt();
+					//remove appts div "profile-container" because "not authed"
+					document.querySelector('#profile-container').remove();
 					//var randomNode2 = document.getElementById('auth-container');
 					if(authNode !== null){
 						authNode.replaceWith(makeDefaultDiv());
@@ -322,29 +305,49 @@ var AUTHLIB = AUTHLIB || (function () {
 			
 			//query server for my appointments
 			function apptFind() {
+				var tempText = document.querySelector("#appts-text");					
+				if(tempText!==null){
+					tempText.innerHTML = "Loading...";
+				}
+
 				//appointment functions
 				var proCon = document.querySelector("#profile-container") || null;				
-				var request = ( '/bars/db' );				
+				var request = ( '/bars/db?' );
+				//1. find appts loaded on current page
+				var haveAppts = document.querySelector("#appts-view");
+				var hApptsList = haveAppts.querySelectorAll(".poll-view-list-poll");
+				var ak2Add = [];
+				let qString;
+
+				for (var i = 0; i < hApptsList.length; i++) {
+					let ak = hApptsList[i].getAttribute("appt-key");
+					if(ak !== null){						
+						ak2Add.push("appts[]=" + ak);
+					}
+				  }
+				if(ak2Add.length > 0){
+					qString = ak2Add.join("&");
+					request += qString;
+				}				
+				//2. get appt-key of those appts
+				//3. append the appt-keys to the request path
+				//xhr
 				ajaxFunctions.ready(ajaxFunctions.ajaxRequest('GET', request, false, function (data) {
+					if(tempText!==null){ tempText.innerHTML = "My Appointments:";}
 					var apptsFound = JSON.parse(data);
 					console.log(apptsFound);
-					document.querySelector("#appts-text").remove(); //remove placeholder
-					if(apptsFound.barsFound !== "none"){
+					// document.querySelector("#appts-text").remove(); //remove placeholder					
+					//no "new" bars compared to pre-delete					 
+					if (apptsFound.barsFound == "none"){
 						proCon.setAttribute("style", "display: unset");
-						proCon.insertBefore(makeAppts(""), document.querySelector("#appts-view"));
+						// proCon.appendChild(makeAppts("none found"));
+					} else {
+						proCon.setAttribute("style", "display: unset");
 						//third arg is div class //divCB is called within barFormer.addElement
 						divCB(apptsFound, "appts-view", {"classText": " appt-wrap-sup"}, null);
-						addDeleteDiv();
-					} else {						
-						proCon.setAttribute("style", "display: unset");
-						proCon.appendChild(makeAppts("none found"));
-//						if(passedInFn){
-//							passedInFn(apptsFound, "appts-view", {"classText": " appt-wrap-sup"}, null);
-//						}
-					}
-					
-				}));
-			};
+						addDeleteDiv();			
+					}		
+				}));			
 			
 			function addDeleteDiv(){
 
@@ -397,251 +400,13 @@ var AUTHLIB = AUTHLIB || (function () {
 										    }
 									    }//else err
 								    });
-//							    });							 
-//							    window.location.reload(true);
-							 }   
-						}
-					}//has .delete div child
-				}
-			}
-
-			/*function addChoiceListener(){
-				var cButtons = document.querySelectorAll(".poll-wrap-sup") || null;				
-				for (var cButton of cButtons) {							
-					cButton.setAttribute("style","background-color: green");
-					//add a new choice to an existing poll
-					cButton.addEventListener('click', function () {
-						var choiceText = prompt("Type your choice here");
-						while(choiceText.length > 140){
-							choiceText = prompt("Choice is too long. (Too many characters, 140 max). Reenter choice:", choiceText);
-						}
-						if(choiceText !== "" && choiceText !== null){
-							var today = new Date(Date.now);
-							ajaxFunctions.ajaxRequest('POST', '/bars/db?date=' + today.toISOString() + "&" + "bid=" + this.id, false, function (error, response) {
-								 window.location.reload(true);
-							});
-						}
-					}, false);
-				}
-			}*/
-/*	
-			function addChoiceNotifier(){
-				var cButtons = document.querySelectorAll(".choice-btn") || null;				
-				for (var cButton of cButtons) {							
-					cButton.setAttribute("style","background-color: grey");
-					//add a new choice to an existing poll
-					cButton.addEventListener('click', function () {
-						var choiceText = alert("Sign-in to add a choice");					
-					}, false);
-				}
-			}
-
-			function addSocialDiv(){
-				var pWrapSup = document.querySelectorAll(".poll-wrap-sup") || null;				
-				for (var pWrapper of pWrapSup) {	
-					if(pWrapper.id !== "dummy"){	
-
-						var partLink = pWrapper.childNodes[0].childNodes[0] || null;
-						console.log(partLink["href"]);
-						var tweext = "Votarama! Vote vote Vote!";
-						if(partLink != null){
-							try{
-								tweext = partLink.innerHTML;
-							} catch(e) {}				
-						}				  
-						//social container
-						var socCon = document.createElement('div');
-						socCon.id = "social-container";
-						socCon.className = "container";
-						var socPla = document.createElement('div');
-						socPla.id = "social-place";
-						socCon.appendChild(socPla);
-
-						//social               
-						var twiAn = document.createElement("a");
-						twiAn.href = "https://twitter.com/share?ref_src=twsrc%5Etfw";
-						twiAn.className = "twitter-share-button";
-						twiAn.setAttribute("data-url", partLink);
-						twiAn.setAttribute("data-text", tweext);
-						twiAn.setAttribute("data-size", "large");
-						twiAn.setAttribute("data-hashtags", "votarama");
-						twiAn.setAttribute("data-show-count", "false");
-						twiAn.innerHTML = "Tweet";
-						socPla.appendChild(twiAn);
-						pWrapper.appendChild(socCon);
-					}					
-				}
-			}
-
-			function addPollDiv(cb) {
-				var controlWrap = document.createElement("div");
-				controlWrap.className = "control-btns";
-
-				var newPoll = document.createElement("div");
-				newPoll.className = ("add-poll-container");
-				var actionPoll = document.createElement('a');
-				var pollBtn = document.createElement('div');
-				pollBtn.className = "btn add-poll";
-				pollBtn.id = "poll-create";
-				pollBtn.innerHTML = "New Poll";
-				actionPoll.appendChild(pollBtn);
-				newPoll.appendChild(actionPoll);
-				controlWrap.appendChild(newPoll);
-
-				var clickFlag = false;
-				var pollFields;
-				newPoll.addEventListener('click', function () {
-
-					if(clickFlag == false){
-						var pTitle = prompt('Enter poll question:');
-						while(pTitle.length > 140){
-							pTitle=prompt("Question is too long (max 140 characters), Reenter: ", pTitle);
-						}
-						while(pTitle.trim() == "" || pTitle == null){
-							pTitle=prompt("Invalid format, reenter: Poll Question:");
-						}
-						var choiceArray = [];						
-						pollFields = { title: pTitle, choiceList: []};
-						
-						var c1 = prompt('Poll Choice 1:');
-						while(c1.length > 140){
-							c1=prompt("Choice is too long (max 140 characters), Reenter: ", c1);
-						}
-						while(c1.trim() == "" || c1 == null){
-							c1=prompt("Invalid format, reenter: Poll Choice 1:");
-						}
-						c1 = c1.substring(0,140);
-						choiceArray.push(c1);
-						
-						var c2 = prompt('Poll Choice 2:');
-						while(c2.length > 140){
-							c2=prompt("Choice is too long (max 140 characters), Reenter: ", c2);
-						}
-						while(c2.trim() == "" || c2 == null){
-							c2=prompt("Invalid format, reenter: Poll Choice 2:");
-						}
-						c2 = c2.substring(0,140);
-						choiceArray.push(c2);					
-						
-
-						pollFields.choiceList = choiceArray;
-						console.log(pollFields);
-
-						//populate dummy preview poll
-						document.querySelector('#dummy-title').innerHTML = pTitle;
-						document.querySelector('#dummy-btn-1').innerHTML = c1;
-						document.querySelector('#dummy-btn-2').innerHTML = c2;
-						document.querySelector('#dummy').setAttribute('style','display: flex');										
-
-						document.querySelector('#poll-create').setAttribute('style','background-color: green');
-						document.querySelector('#poll-create').innerHTML = "Create";
-												
-						//add more choices create
-						document.querySelector('#addmore-poll-container').setAttribute('style', 'display: ');						
-						document.querySelector('#addmore-poll-container').addEventListener('click',
-							function () {
-								clickFlag = true;	
-								
-								var cN = prompt('Poll Choice:');
-								while(cN.length > 140){
-									cN=prompt("Choice is too long (max 140 characters), Reenter: ", cN);
 								}
-								while(cN.trim() == "" || cN == null){
-									cN=prompt("Invalid format, reenter: Poll Choice:");
-								}
-								if(cN != null){									
-									var btnN = document.createElement('div');
-									btnN.className = "btn dummy-btn";
-									btnN.id = "dummy-btn-n"; //button1									
-									btnN.innerHTML = cN;
-									document.querySelector('#dummy').appendChild(btnN);
-									choiceArray.push(cN);	
-								}
-								pollFields.choiceList = choiceArray;
-								console.log(pollFields);								
-							}
-						);				
-						
-												
-						//cancel create
-						document.querySelector('#cancel-poll-container').setAttribute('style', 'display: ');						
-						document.querySelector('#cancel-poll-container').addEventListener('click',
-							function () {
-								clickFlag = false;
-								document.querySelector('#poll-create').setAttribute('style','');
-								document.querySelector('#poll-create').innerHTML = "New Poll";  
-								document.querySelector('#cancel-poll-container').setAttribute('style', 'display: none;');
-								document.querySelector('#addmore-poll-container').setAttribute('style', 'display: none;');
-								document.querySelector('#dummy').setAttribute('style','display: none');
-							}
-						);						
+							}//deleteCB
+						}//has .delete div child
 					}
-					else if(clickFlag == true){
-						document.querySelector('#poll-create').setAttribute('style','display: none;');
-//						document.querySelector('#poll-create').innerHTML = "please wait...";         
-						ajaxFunctions.ajaxRequest('POST', '/polls?q=' + JSON.stringify(pollFields), false, function (error, response) {
-							console.log("Request sent, response received");                
-							window.location.reload(true);	
-						});
-						clickFlag = false;
-						
-					}        
-					clickFlag = true;    
-				}, false);
-				
-				//poll preview dummy
-				var pollDum = document.createElement("div");
-				pollDum.className = "poll-wrap-sup";
-				pollDum.id = "dummy";
-				var pollT = document.createElement('div');
-				pollT.className = "poll-title";
-				pollT.id = "dummy-title"; //title
-				var btnD1 = document.createElement('div');
-				btnD1.className = "btn dummy-btn";
-				btnD1.id = "dummy-btn-1"; //button1
-				var btnD2 = document.createElement('div');
-				btnD2.className = "btn dummy-btn";
-				btnD2.id = "dummy-btn-2"; //button2
-
-				pollDum.appendChild(pollT);
-				pollDum.appendChild(btnD1);
-				pollDum.appendChild(btnD2);	
-				
-				//add more choices button
-				var addMore = document.createElement("div");
-				addMore.className = ("addmore-poll-container");
-				addMore.id = ('addmore-poll-container');
-				addMore.setAttribute('style','display: none');
-				var actionAddMore = document.createElement('a');
-				var moreBtn = document.createElement('div');
-				moreBtn.className = "btn more-choices";
-				moreBtn.id = "more-choices";
-				moreBtn.innerHTML = "Add Choices";
-				actionAddMore.appendChild(moreBtn);
-				addMore.appendChild(actionAddMore);
-				controlWrap.appendChild(addMore);	
-				
-				//cancel button
-				var cancelPoll = document.createElement("div");
-				cancelPoll.className = ("cancel-poll-container");
-				cancelPoll.id = ('cancel-poll-container');
-				cancelPoll.setAttribute('style','display: none');
-				var actionCancel = document.createElement('a');
-				var cancelBtn = document.createElement('div');
-				cancelBtn.className = "btn cancel-poll";
-				cancelBtn.id = "poll-cancel";
-				cancelBtn.innerHTML = "Cancel Create";
-				actionCancel.appendChild(cancelBtn);
-				cancelPoll.appendChild(actionCancel);
-				controlWrap.appendChild(cancelPoll);
-
-				var controlPad = document.querySelector('.poll-profile-control') || null;
-				if(controlPad !== null){					
-					controlPad.appendChild(controlWrap);	
-					controlPad.appendChild(pollDum);
-				}
+				}//function addDeelteteltelteltlet
 			}
-		*/},
+		},
 
 		userScript : function(){
 

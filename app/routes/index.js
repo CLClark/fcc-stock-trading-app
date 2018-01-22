@@ -1,6 +1,7 @@
 'use strict';
 
 var path = process.cwd();
+var queue = require('queue')
 var BarsHandler = require(path + '/app/controllers/barsHandler.server2.js');
 
 module.exports = function (app, passport) {

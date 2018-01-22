@@ -46,9 +46,10 @@ var MYLIBRARY = MYLIBRARY || (function () {
 	barFormer : function(jsonData, parentIdString, optionsBF, cb) {
 		let pollView = document.getElementById(parentIdString);  //ul		
 		if(pollView.hasChildNodes()){
-			while (pollView.firstChild) {
-				pollView.removeChild(pollView.firstChild);
-			}
+			//clears the existing...
+			// while (pollView.firstChild) {
+			// 	pollView.removeChild(pollView.firstChild);
+			// }
 		}
 		//turn json into html elements
 		for(var i = 0; i < jsonData.length; i++){

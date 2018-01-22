@@ -21,6 +21,9 @@
 <header>
 </header>
 <body>
+	<div id="loading">
+		<img id="loading-image" src="public/img/vota.png" alt="Loading..." />
+	</div>
 	<div id="navi" class="navi-menu">
 		<div id="api-icon"></div>
 		<div id="home-icon"></div>
@@ -47,22 +50,26 @@
 		<h1 class="clementine-text">Enter your zip: </h1>
 		<input type="text" id="zipSearch" name="q" placeholder="Zip code (US)">				
 	</div>
-	<div id="profile-container" style="display: none">
-		<ul id="appts-view" ></ul>
-	</div>
-	<!--Div that will hold the polls-->    
-	<div id="pollDb">
-		<ul id="poll-view" class="poll-view-list"></ul>
+	<div id="events-sup">
+		<!--Div that will hold the polls-->    
+		<div id="pollDb">
+			<ul id="poll-view" class="poll-view-list"></ul>
+		</div>
+
+		<div id="profile-container" style="display: none">
+			<span id="fresh-appts">REFRESH APPTS</span>
+			<ul id="appts-view" ></ul>
+		</div>	
 	</div>	
 </body>
 <footer>		
-	<script type="text/javascript">		
+	<script type="text/javascript">	
 		AUTHLIB.navi();
 		/* AUTHLIB.fbControl();*/
 		AUTHLIB.authScript(true);
 		MYLIBRARY.barProducer(AUTHLIB.chooser);
 		/* MYLIBRARY.barProducer(AUTHLIB.chooser); */
-	</script>
+	</script>		
 </footer>
 
 </html>
