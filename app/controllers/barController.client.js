@@ -69,7 +69,8 @@ var MYLIBRARY = MYLIBRARY || (function () {
 	                      var newWrapSup = document.createElement("div");
 	                      newWrapSup.className = "poll-wrap-sup";
 	                      newWrapSup.id = ("poll-wrap-sup-"+ pollCopy["id"]);
-	                      
+			      
+			      //contains info divs for appt
 	                      var newWrapInfo = document.createElement("div");
 	                      newWrapInfo.className = "poll-wrap-info";
 	                      
@@ -103,57 +104,6 @@ var MYLIBRARY = MYLIBRARY || (function () {
 	                         var contDiv = document.createElement("div");
 	                         contDiv.className = "container";
 	                         contDiv.id = "vote-controls";
-	                    
-	                      //divs: add choice button               
-/*	                      for (var i = 0; i < pollChoices.length - 1; i++) {
-	                         
-	                         var cNIndex = i;
-	                         var choiceName = pollChoices[(cNIndex + 1)][0] || "";
-	                         var choiceCount = pollChoices[(cNIndex + 1)][1] || 0;
-	                         var cid = pollChoices[(cNIndex + 1)][2] || 0;
-	                         
-	                         //choice wrapper
-	                         var choiceDiv = document.createElement("div");
-	                         choiceDiv.className = "vote";
-	                            //actual anchor
-	                            var actionDiv = document.createElement("a");
-	                            var voteLink = "/polls/votes?" + "pid=" + pollCopy["id"] + "&" + "cid=" + cid;
-	                            //actionDiv.className = "vote-btn";                
-	                            actionDiv.id = voteLink;
-	                            actionDiv.setAttribute("poll-key", pollCopy["id"]);
-	                                  //actual button
-	                                  var btnDiv = document.createElement("div");
-	                                  btnDiv.className = "btn vote-btn";
-	                                  var choiceText = document.createElement("a");
-	                                  //btnDiv.id = "vote-btn";
-	                                  choiceText.innerHTML = choiceName || "";
-	                                  btnDiv.appendChild(choiceText);
-	                               actionDiv.appendChild(btnDiv);
-	                            choiceDiv.appendChild(actionDiv);
-	                         contDiv.appendChild(choiceDiv);
-	                         newWrap.appendChild(contDiv);
-
-	                         function updateVoteCount (data) {
-	                            var voteObj = JSON.parse(data);
-	                            window.alert(voteObj.voteStatus);
-	                            //redraw the GoogleChart      
-	                         }
-	                         //vote ajax call
-	                         actionDiv.addEventListener('click', function () {
-	                 	        var existNodeId = this.getAttribute("poll-key");
-	                            ajaxFunctions.ajaxRequest('POST', this.id, false, function (response) {
-	                           	//RECREATE THE POLL DIV with response object
-	                           	 var responseArray = JSON.parse(response);                    	 
-	                           	 if(responseArray.length > 0){
-	                           		 window.location.reload(true);                    		 
-	                           		 //unimplemented: redraw and update chart             	    
-	                           	 }
-	                           	 else if(responseArray.voteStatus == "already-voted"){
-	                           		 var noVote = alert("You've already voted on this poll");
-	                           	 }
-	                            });   
-	                         }, false);
-	                      };*/
 
 	                      //poll placeholder
 	                      var newDiv = document.createElement("li");            
@@ -168,9 +118,9 @@ var MYLIBRARY = MYLIBRARY || (function () {
 	                         if(polljone.appt){
 	                    	     newDiv.setAttribute("appt-key", polljone.appt["_id"]);
 		                         newDiv.setAttribute("appt-time", polljone.appt["timestamp"]);
-		                         let thisDate = new Date(Date.parse(polljone.appt["timestamp"]));
+					 let apptDate = new Date(Date.parse(polljone.appt["timestamp"]));					 
 		                         let dayForm = "";
-		                         switch (thisDate.getDay()) {
+		                         switch (apptDate.getDay()) {
 		                           case 0:	dayForm = "Sunday";	break;		                           
 		                           case 1:	dayForm = "Monday";	break;
 		                           case 2:	dayForm = "Tuesday";	break;
@@ -179,45 +129,66 @@ var MYLIBRARY = MYLIBRARY || (function () {
 		                           case 5:	dayForm = "Friday";	break;
 		                           case 6:	dayForm = "Saturday";	break;
 		                           default: dayForm = "";
-		                         }
-		                         showTextMaker(( dayForm));
-		                         
-	                         }
-	                         
-	                      newWrap.appendChild(newDiv);
-	                      
-	                      function showTextMaker(inner){
-	                    	  
-	                    	  var showText = document.createElement("span");
-		                         showText.id = "show-text";
-//		                         showText.className = "u-text-subtle";
-		                         if(inner){
-		                    	     showText.innerHTML = inner;
-		                         }
-		                         else{
-		                    	     showText.innerHTML = "click to book...";		                    	     
-		                         }		                         
-		                         showText.style = "color";
-		                      newWrap.appendChild(showText);		                      
-	                      }
-  /*
-	                     // add-choice button
-	                      var newChoice = document.createElement("div");
-	                      newChoice.className = ("add-choice");
-	                         var actionChoice = document.createElement('a');
-	                            var choiceBtn = document.createElement('div');
-	                            choiceBtn.className = "btn choice-btn";
-	                            choiceBtn.innerHTML = "New Choice";
-	                            choiceBtn.pid = pollCopy["id"];
-	                         actionChoice.appendChild(choiceBtn);
-	                         newChoice.appendChild(actionChoice);
-	                      contDiv.appendChild(newChoice);              
-*/
+					}
+
+					var nowDate = new Date();
+					//comparer date
+					var seenDay = new Date(nowDate.getFullYear(), nowDate.getMonth(), nowDate.getDate());
+
+					//seen date is "today" 2am onward
+					if (nowDate.getHours()  >= 2){
+						// seenDay = new Date(nowDate.getFullYear(), nowDate.getMonth(), nowDate.getDate());
+					} else {
+						//seen date is "yesterday" before 6am
+						seenDay.setDate(seenDay.getDate() - 1);
+					}
+					//compare appt to framed "today"
+					if(apptDate.getTime() < seenDay.getTime()){
+						showTextMaker("expired")
+						.then(res => {
+							res.className = "show-text expired-text";
+							newWrap.appendChild(res);
+							//set the main appt div to class 'expired'
+							newWrapSup.className =  newWrapSup.className + " expired";							
+						})
+						.catch(e=> console.log(e));
+					}else{
+						showTextMaker(dayForm)
+						.then(res => {
+							res.className = "show-text appt-text"
+							newWrap.appendChild(res);
+						})
+						.catch(e=> console.log(e));
+					}
+					console.log(dayForm);					
+					console.log(	seenDay.toDateString()	);
+				}
+				
+			      newWrap.appendChild(newDiv);
+
+			      function showTextMaker(inner){
+				return new Promise((resolve, reject) => {
+				  var showText = document.createElement("span");
+				  showText.className = "show-text";
+				  showText.style = "color";
+				  if(inner){
+					  showText.innerHTML = inner;
+					  resolve(showText);
+				  }
+				  else{
+					  showText.innerHTML = "click to book...";	
+					  resolve(showText);
+				  }
+					reject("error in showTextMaker");
+				});
+			}			      
 
 	       	     //add++i to poll-view ul               
 	                      if(options == null){
-	                    	  showTextMaker(false);
-	                    	  parent.appendChild(newWrapSup);     
+				showTextMaker(false)
+				.then(res => newWrap.appendChild(res))
+				.catch(e=> console.log(e));	                    	  
+	                    	parent.appendChild(newWrapSup);
 	                      }
 	                      else{	                    	  
 	                    	  newWrapSup.className =  newWrapSup.className + options.classText;
@@ -272,7 +243,7 @@ var MYLIBRARY = MYLIBRARY || (function () {
                   var jone = jsonData[i];
                   var pString = pId;
 //                  document.getElementById(pString).parentNode.parentNode.addEventListener('click', function(element){
-                  var that =document.getElementById(pString).parentNode.querySelector('#show-text'); 
+                  var that =document.getElementById(pString).parentNode.querySelector('.show-text'); 
                   that.addEventListener('click', showChart.bind(null, that));                  
                }
                passedInFunction();   
@@ -313,8 +284,7 @@ var MYLIBRARY = MYLIBRARY || (function () {
           		  chart.draw(viewFinal, chartOptions);
           		  console.log("resized");          		  
         	        }.bind(arg));
-            }
-            
+            }            
 
          } //all or nothing          
       } //poll producer

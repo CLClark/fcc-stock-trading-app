@@ -6,6 +6,7 @@ var AUTHLIB = AUTHLIB || (function () {
 	var authScriptCB;
 	var apiAuth = appUrl + '/auth/check';
 	var defSearch = null;
+	var loader;
 	var _args = {}; // private
 	//polyfill:
 	if (window.NodeList && !NodeList.prototype.forEach) {
@@ -23,6 +24,7 @@ var AUTHLIB = AUTHLIB || (function () {
 			extScript = _args[1] || null; //callback for external script
 			authScriptCB = _args[2] || null;			
 			// some other initialising
+			loader = this.loadLock;
 		},
 		navi : function(){ ///navigation icon
 
@@ -34,7 +36,7 @@ var AUTHLIB = AUTHLIB || (function () {
 				aIcon.href = "/";		
 				var imgIcon = document.createElement("img");
 				imgIcon.src = "/public/img/vota.png";
-				imgIcon.style = "height: 80px; width: 80px;";
+				imgIcon.style = "height: 80px; width: auto;";
 				aIcon.appendChild(imgIcon);
 				return aIcon;
 			}
@@ -75,7 +77,7 @@ var AUTHLIB = AUTHLIB || (function () {
 		                           default: dayForm = "";
 				}		                           
 //				return (now.toLocaleString() + "<br>" + "tonight, " +dayForm);
-				return (now.toUTCString());
+				return (now.toDateString() + "<br>" + now.toTimeString().substring(0,8));
 			}
 			
 			if(apiIcon !== null){
@@ -85,6 +87,22 @@ var AUTHLIB = AUTHLIB || (function () {
 				  clock.innerHTML = makeClock();
 				}				
 			}
+
+			let refresher = document.querySelector('#fresh-appts');
+			if(refresher !== null){
+				refresher.addEventListener('click', () => {
+					//resets all visible appts
+					let resetApptsList = document.querySelector("#appts-view");
+					if(resetApptsList.hasChildNodes()){
+						while (resetApptsList.firstChild) {
+							resetApptsList.removeChild(resetApptsList.firstChild);
+						}
+						authScriptCB(false);
+					}else{
+						authScriptCB(false);
+					}							
+				}, false);//event listener "click"
+			}//refresher if
 
 		},
 		
@@ -112,39 +130,63 @@ var AUTHLIB = AUTHLIB || (function () {
 			
 			/*			Search Result bar clicks (add and remove)			*/
 			function clickHandle() {
-				var today = new Date();
+				//lockpic on
+				loader(true);				
+				var tDay = new Date();
+				// tDay.setHours(21); //for testing
+				var toDate = new Date(tDay.getFullYear(), tDay.getMonth(), tDay.getDate())
+				if(tDay.getHours() >= 20){										
+					toDate.setDate(toDate.getDate() + 1);
+					// toDate.setDate(toDate.getDate() - 1); //for testing
+					// console.log('if passed');
+				}
+				// console.log(toDate.toDateString());
 				var keyName = this.querySelector('.poll-view-list-poll');
 //				console.log(keyName.getAttribute("poll-key"));						
 				let that = this;
-				that.querySelector("#show-text").innerHTML = "please hold...";
+				that.querySelector(".show-text").innerHTML = "please hold...";
 				//if "app key" check
 				if(!that.hasAttribute("appt-key")){
-					//post server for 'this' bar and 'today'
-					ajaxFunctions.ajaxRequestLim('POST', '/bars/db?date=' + today.toISOString() + "&" + "bid=" + keyName.getAttribute("poll-key"), 10000,
-					function (err, response) {
+					//post server for 'this' bar and 'today'					
+					ajaxFunctions.ajaxRequestLim('POST', '/bars/db?date=' + toDate.toISOString() + "&" + "bid=" + keyName.getAttribute("poll-key"), 10000,
+					function (err, response, status) {
 						let respJSON = JSON.parse(response);
 						
-						if(respJSON == null || err){
-							that.querySelector("#show-text").innerHTML = "click to book...";
+						if(status == 403){
+							//lockpic off
+							loader(false);
+							that.querySelector(".show-text").innerHTML = "Sign in to book...";
+							alert("please sign in ...");
+							that.removeEventListener('click', clickHandle);
+							return;
+						}
+						else if(respJSON == null){
+							//lockpic off
+							loader(false);
+							that.querySelector(".show-text").innerHTML = "click to book...";
 							alert("please wait...");
 							that.removeEventListener('click', clickHandle);
 							return;
 						}
 						else{
 							that.setAttribute("style","border-color: #ebc074; background-color: #f5deb7");								
-							that.querySelector("#show-text").innerHTML = "booked!";
-							that.querySelector("#show-text").setAttribute("style","color: #f15c00");						
+							that.querySelector(".show-text").innerHTML = "booked!";
+							that.querySelector(".show-text").setAttribute("style","color: #f15c00");						
 							//if keys match
 							if(keyName.getAttribute("poll-key") == respJSON["appt"]["yelpid"]){
 								//append the new "appt-key" to this bar div
 								that.setAttribute("appt-key", respJSON["appt"]["_id"]);									
 							}
 						}
+						//lockpic on
+						loader(true);
 						//execute AUTHLIB.authScript(false) as a cb
-						authScriptCB(false); 
+						authScriptCB(false);
 					});//ajax
 				}else{
 					//click action to "unbook" this bar
+					//lockpic off
+					loader(false);
 					deleteCB(that);
 				}//else
 				
@@ -162,8 +204,8 @@ var AUTHLIB = AUTHLIB || (function () {
 						pareOut.removeChild(pareOut.querySelector('[appt-key=\"' + keyS +'\"').parentNode.parentNode.parentNode);
 
 //						zat.parentNode.parentNode.setAttribute("style","display: none");
-						 zat.querySelector("#show-text").innerHTML = "click to book...";
-						 zat.querySelector("#show-text").setAttribute("style","");
+						 zat.querySelector(".show-text").innerHTML = "click to book...";
+						 zat.querySelector(".show-text").setAttribute("style","");
 						 zat.removeAttribute("appt-key");
 						 //execute AUTHLIB.authScript(false) as a cb
 						 authScriptCB(false);
@@ -191,8 +233,8 @@ var AUTHLIB = AUTHLIB || (function () {
 				aLog1.innerHTML = "Logout";
 				var pBar = document.createElement("p");
 				pBar.innerHTML = "|";
-				newSpan2.appendChild(aPro1);
-				newSpan2.appendChild(pBar);
+				// newSpan2.appendChild(aPro1);
+				// newSpan2.appendChild(pBar);
 				newSpan2.appendChild(aLog1);
 				return newSpan2;
 			}
@@ -227,7 +269,6 @@ var AUTHLIB = AUTHLIB || (function () {
 			}			
 
 			ajaxFunctions.ready(ajaxFunctions.ajaxRequest('GET', apiAuth, false, function (data) {
-				
 				//reset navi for new auth call
 				let resetAttempt = document.querySelector("#login-nav");
 				//TODO adjust these... resets to respond to server
@@ -250,26 +291,8 @@ var AUTHLIB = AUTHLIB || (function () {
 					if(document.querySelector("#appts-text") == null){
 						document.querySelector("#profile-container").insertBefore(makeAppts("My Appointments:"),document.querySelector("#appts-view"));
 						
-					}
-					let refresher = document.querySelector('#fresh-appts');
-					if(refresher !== null){
-						refresher.addEventListener('click', () => {
-							//resets all visible appts
-							let resetApptsList = document.querySelector("#appts-view");
-							if(resetApptsList.hasChildNodes()){
-								while (resetApptsList.firstChild) {
-									resetApptsList.removeChild(resetApptsList.firstChild);
-								}
-							}else{
-								authScriptCB(false);
-							}
-							
-						}, false);
-					}
-					apptFind();
-//					addChoiceListener();					
-					// if(location.pathname !== "/"){
-					// }					
+					}					
+					apptFind();					
 				}
 				else if(authObj.authStatus == false){
 //					loginPrompt();
@@ -282,7 +305,9 @@ var AUTHLIB = AUTHLIB || (function () {
 							location.replace('/auth/facebook');							
 						});						
 					}
-				}				
+					//remove lockpic
+					loader(false);
+				}//authObj.authStatus false, else
 			}));
 			/*
 			function loginPrompt(){
@@ -308,6 +333,8 @@ var AUTHLIB = AUTHLIB || (function () {
 				var tempText = document.querySelector("#appts-text");					
 				if(tempText!==null){
 					tempText.innerHTML = "Loading...";
+					//toggle lock pic
+					loader(true);
 				}
 
 				//appointment functions
@@ -341,11 +368,20 @@ var AUTHLIB = AUTHLIB || (function () {
 					if (apptsFound.barsFound == "none"){
 						proCon.setAttribute("style", "display: unset");
 						// proCon.appendChild(makeAppts("none found"));
+						//lockpic off
+						loader(false);
 					} else {
 						proCon.setAttribute("style", "display: unset");
 						//third arg is div class //divCB is called within barFormer.addElement
+						apptsFound.sort(function(a, b){
+							let aTime = new Date(a.appt["timestamp"]);
+							let bTime = new Date(b.appt["timestamp"]);
+							return bTime.getTime() - aTime.getTime();
+						});
 						divCB(apptsFound, "appts-view", {"classText": " appt-wrap-sup"}, null);
-						addDeleteDiv();			
+						addDeleteDiv();
+						//toggle lock pic
+						loader(false);
 					}		
 				}));			
 			
@@ -365,7 +401,7 @@ var AUTHLIB = AUTHLIB || (function () {
 						    var pollDel = document.createElement('div');
 						    pollDel.className = "btn delete-btn";
 						    pollDel.id = "delete-btn";
-						    pollDel.innerHTML = "<span class=\"del-text\">unbook?</span>";
+						    pollDel.innerHTML = "<span class=\"del-text\">remove</span>";
 						    pollDel.setAttribute("style","margin: auto;");
 						 actionDel.appendChild(pollDel);
 						 deletePoll.appendChild(actionDel);
@@ -394,8 +430,8 @@ var AUTHLIB = AUTHLIB || (function () {
 										    //existing super-bar node
 										    if(resetThis !== null){
 											    resetThis.setAttribute("style","");
-											    resetThis.querySelector("#show-text").innerHTML = "click to book...";
-											    resetThis.querySelector("#show-text").setAttribute("style","");
+											    resetThis.querySelector(".show-text").innerHTML = "click to book...";
+											    resetThis.querySelector(".show-text").setAttribute("style","");
 											    resetThis.removeAttribute("appt-key");										    
 										    }
 									    }//else err
@@ -405,7 +441,7 @@ var AUTHLIB = AUTHLIB || (function () {
 						}//has .delete div child
 					}
 				}//function addDeelteteltelteltlet
-			}
+			}//apptFind()
 		},
 
 		userScript : function(){
@@ -444,7 +480,7 @@ var AUTHLIB = AUTHLIB || (function () {
 			}));
 		},
 
-		loadScript : function(){
+		loadExtScript : function(){
     		return new Promise(function (resolve, reject) {
 	        	var s;
 		        s = document.createElement('script');
@@ -453,6 +489,26 @@ var AUTHLIB = AUTHLIB || (function () {
 		        s.onerror = reject;
 		        document.head.appendChild(s);
 		    });
-		}	
+		},
+		loadLock : function loadLock(boo) {
+			let lockPic = document.querySelector('#loading');
+			if(boo === true){
+				lockPic.style = "";
+				lockPic.setAttribute('lock', "on");
+			}
+			else if(boo === false){
+				lockPic.style = "display: none";
+				lockPic.setAttribute('lock', "off");
+			}
+			else{
+				if(lockPic.getAttribute('lock') == 'on'){
+					lockPic.style = "display: none";
+					lockPic.setAttribute('lock', "off");
+				} else{
+					lockPic.style = "";
+					lockPic.setAttribute('lock', "on");
+				}
+			}			
+		}
 	};
 })();

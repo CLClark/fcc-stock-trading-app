@@ -37,24 +37,26 @@ function BarsHandler () {
 				'Authorization': ('Bearer ' + process.env.API_KEY),
 				'user-agent': 'clclarkFCC/1.0',
 				'Accept-Language': 'en-US',
-				'Accept-Encoding': 'gzip, deflate, br'
+				// 'Accept-Encoding': 'gzip, deflate, br',
+				'Connection': 'keep-alive'				
 			}
 		};		
 		const sreq = https.request(options, (res2) => {
-			let body1 = [];
-			console.log(`STATUS: ${res.statusCode}`);
+			var body1 = [];
+			console.log(`STATUS: ${res2.statusCode}`);
 //			console.log(sreq.socket.remoteAddress);
-//			console.log(`HEADERS: ${JSON.stringify(res.headers)}`);
-//			res2.setEncoding('utf8');
-			res2.on('data', (d) => {				
-				body1.push(d);
+			// console.log(`HEADERS: ${JSON.stringify(res2.headers)}`);
+			// res2.setEncoding('utf8');
+
+			res2.on('data', (d) => {
+				body1.push(d);								
+				// console.log(d);
 			 });
 			res2.on('end', () => {
+				// console.log(body1);
+				// console.log(JSON.parse(Buffer.concat(body1).toString()));
 				try {
-					var resJSON = JSON.parse(Buffer.concat(body1).toString());
-					//TODO promise
-					
-//			console.log(bodyJSON.businesses);
+					var resJSON = JSON.parse(Buffer.concat(body1).toString());										
 					console.log("all bars");
 					barBuilder(resJSON.businesses)					
 					.then( builtResults => {
@@ -292,11 +294,9 @@ function BarsHandler () {
 								promise.then(result => func().then(Array.prototype.concat.bind(result))),
 								Promise.resolve([])
 							);
-	//					var intervalT = 0;
 						// convert each url to a function that returns a promise
 						const funcs = result.rows.filter(rowCheck => rowCheck).map(
-							pgResp => () => yelpSingle(pgResp, null)
-							//intervalT += 100);						
+							pgResp => () => yelpSingle(pgResp, null)							
 						);
 
 						promiseSerial(funcs)		
@@ -304,7 +304,7 @@ function BarsHandler () {
 						.then(builtBars => {
 							res.json(builtBars);
 							console.log("builtBarsVVVV");
-							console.log(builtBars);
+							// console.log(builtBars);
 						})
 						.catch(e=>{console.log(e + "loopy Loop");});	
 											
@@ -342,10 +342,10 @@ function BarsHandler () {
 						'Authorization': ('Bearer ' + process.env.API_KEY),
 						'user-agent': 'clclarkFCC/1.0',
 						'Accept-Language': 'en-US',
-						'Accept-Encoding': 'gzip, deflate, br'
-					}
-				};
-				
+						// 'Accept-Encoding': 'gzip, deflate, br'
+					},
+					timeout: 4000
+				};				
 				const yreq = https.request(options, (resf) => {
 					var body1 = [];
 					console.log(`STATUS: ${res.statusCode}` + "yelp Single");
@@ -358,7 +358,7 @@ function BarsHandler () {
 						 });
 						resf.on('end', () => {
 							try {
-	//							console.log(body1);
+								// console.log(body1);
 // console.log("pre-parse");
 								let bodyJSON = JSON.parse(Buffer.concat(body1).toString());
 //								bodyJSON = concated.toJSON();								
@@ -371,7 +371,7 @@ function BarsHandler () {
 								
 								resolve(bodyJSON);
 							} catch (e) {
-								console.log(bodyJSON);
+								// console.log(bodyJSON);
 								console.error(e.message);
 								reject(e);
 							}
@@ -386,7 +386,12 @@ function BarsHandler () {
 							reject("not json");	
 						});						
 					}
-				});		
+				});
+				yreq.on('timeout', (e) => {
+					console.error(`request timeout: ${e.message}`); 
+					yreq.abort();
+					resolve({});
+				});
 				yreq.on('error', (e) => { console.error(`problem with request: ${e.message}`); reject(e); });
 				yreq.end();	
 			 });//promise		
@@ -431,7 +436,7 @@ console.log('pg-connected2');
 					.then(builtBars => {
 						res.json(builtBars[0]);
 						console.log("builtAddAppt");
-						console.log(builtBars);
+						// console.log(builtBars);
 					})
 					.catch(e=>{console.log(e + "add appt yelpy");});
 				}
@@ -486,7 +491,7 @@ console.log('pg-connected2');
 					'Authorization': ('Bearer ' + process.env.API_KEY),
 					'user-agent': 'clclarkFCC/1.0',
 					'Accept-Language': 'en-US',
-					'Accept-Encoding': 'gzip, deflate, br'
+					// 'Accept-Encoding': 'gzip, deflate, br'
 				}
 			};
 			

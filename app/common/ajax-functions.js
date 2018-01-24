@@ -17,12 +17,13 @@ ready: function ready (fn) {
 		var xmlhttp = new XMLHttpRequest();
 
 		xmlhttp.onreadystatechange = function () {
+			// xmlhttp.response["status"] = xmlhttp.status;
 			if (xmlhttp.readyState === 4 && xmlhttp.status === 200) {
-				callback(xmlhttp.response);
+				callback(xmlhttp.response, xmlhttp.status);
 			}
 			else if(xmlhttp.readyState === 4 && xmlhttp.status === 403){
-				//error callback
-				callback(xmlhttp.response);
+				//error callback				
+				callback(xmlhttp.response, xmlhttp.status);
 			}
 		};
 		xmlhttp.open(method, url);
@@ -66,15 +67,15 @@ ready: function ready (fn) {
 			xhrTrack.value = url;
 			document.documentElement.appendChild(xhrTrack);
 
-			xmlhttp.onreadystatechange = function () {
+			xmlhttp.onreadystatechange = function () {				
 				if (xmlhttp.readyState === 4 && xmlhttp.status === 200) {
-					callback(null, xmlhttp.response);
+					callback(null, xmlhttp.response, xmlhttp.status);
 					//remove global statusifier
 					removeIt(xhrTrack);				
 				}
 				else if(xmlhttp.readyState === 4 && xmlhttp.status === 403){
 					//error callback
-					callback(null, xmlhttp.response);
+					callback(null, xmlhttp.response, xmlhttp.status);
 					//remove global statusifier
 					removeIt(xhrTrack);				
 				}
