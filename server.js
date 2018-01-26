@@ -13,7 +13,7 @@ config.ssl = true;
 var http = require('http');
 
 var app = express();
-require('dotenv').load();
+// require('dotenv').load();
 require('./app/config/passport')(passport);
 
 app.use('/controllers', express.static(process.cwd() + '/app/controllers'));

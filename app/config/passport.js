@@ -4,7 +4,7 @@ var FacebookStrategy = require('passport-facebook').Strategy;
 var configAuth = require('./auth');
 var pg = require('pg');
 var parse = require('pg-connection-string').parse;
-require('dotenv').load();
+// require('dotenv').load();
 var config = parse(process.env.DATABASE_URL);
 config.ssl = true;
 

@@ -2,7 +2,7 @@
 
 const https = require('https');
 const querystring = require('querystring');
-require('dotenv').load();
+// require('dotenv').load();
 var pg = require('pg');
 var parse = require('pg-connection-string').parse;
 var config = parse(process.env.DATABASE_URL);
