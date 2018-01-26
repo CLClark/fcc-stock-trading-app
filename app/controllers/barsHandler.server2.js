@@ -7,9 +7,7 @@ var pg = require('pg');
 var parse = require('pg-connection-string').parse;
 var config = parse(process.env.DATABASE_URL);
 
-
 function BarsHandler () {
-	
 	
 	//find all active bars (for app home page)
 	this.allBars = function (req, res) {
@@ -36,8 +34,7 @@ function BarsHandler () {
 			headers: {
 				'Authorization': ('Bearer ' + process.env.API_KEY),
 				'user-agent': 'clclarkFCC/1.0',
-				'Accept-Language': 'en-US',
-				// 'Accept-Encoding': 'gzip, deflate, br',
+				'Accept-Language': 'en-US',				
 				'Connection': 'keep-alive'				
 			}
 		};		
@@ -58,10 +55,46 @@ function BarsHandler () {
 				try {
 					var resJSON = JSON.parse(Buffer.concat(body1).toString());										
 					console.log("all bars");
-					barBuilder(resJSON.businesses)					
+					barBuilder(resJSON.businesses, false)
+					.then((middleware) => {
+						return barBuilder2(middleware, req.query.timeframe)//returns an array {yelpid: id, count: number}
+						.then((bb2) => {
+							let mapped = middleware.map((eachB) => {
+								return new Promise((rezolve, rezect) => {
+									var oldB = 0;
+									if(bb2.length > 0){
+										bb2.forEach( apptCount => {
+											oldB++;
+											if(apptCount.yelpid == eachB.id){
+												eachB["count"] = apptCount.count;
+												console.log("---");
+												rezolve(eachB);
+											}else if(oldB == bb2.length){
+												console.log(".");
+												rezolve(eachB);
+											} else { 
+												console.log("\\");
+												rezolve(eachB);												
+											}
+										});
+									} else {
+										rezolve(eachB);
+									}									
+								});															
+							});
+							return (mapped);												 
+						}).catch((e) => {	});						
+						// return Promise.resolve(mapped);
+					})
 					.then( builtResults => {
-						res.json(builtResults);
-						storeBusinesses(builtResults);
+						Promise.all(builtResults)
+						.then((builtRez) => {
+							res.json(builtRez);	
+							storeBusinesses(builtRez);
+						})
+						.catch((e) => {	});	
+						// res.json(builtResults);
+						// storeBusinesses(builtResults);
 					})
 					.catch(e=>{
 						console.log(e + " all bars error");});					
@@ -85,10 +118,10 @@ function BarsHandler () {
 //			});			
 //		}//for loop
 		
-		const pool5 = new pg.Pool(config);
+		var pool5 = new pg.Pool(config);
 		let bars = [];
 		
-		var multiBar = data.forEach( function (eachBar) {											
+		var multiBar = data.forEach( function (eachBar) {
 			var promToP = storeBusiness(eachBar, pool5);
 			bars.push(promToP);						
 		});			
@@ -150,56 +183,145 @@ function BarsHandler () {
 		location	
 		active
 	*/
-	function barBuilder(result, opts){
+	//accepts JSON array of yelp businesses, then outputs JSON for client
+	function barBuilder(result, opts){		
 		//TODO turn this into a PROMISE, and update any dependencies
 		return new Promise((resolve, reject)=>{
 			console.log("barBuilder callback");
 			if(!Array.isArray(result)){
 				console.log(result);
 				reject("input not an array");
-			}
-			var aggregator = [];		
-			var currentBar = ""; var currentPIndex = -1;
-			var totalVotes = 0;
-			var vRay = [];		
-			for( var i = 0; i < result.length; i++){
-				var barId = result[i].id || "";			
-				if(currentBar !== barId){
-					currentBar = barId;
-					aggregator.push({
-						id: barId,
-						title: result[i].name,					
-						rating: result[i].rating,
-						coordinates: result[i].coordinates,
-						price: result[i].price,
-						display_phone: result[i].display_phone	,
-						image_url: result[i].image_url,
-						url: result[i].url
-					});
-					if(opts){
-						let leng = aggregator.length;
-						aggregator[(leng - 1)]["appt"] = result[i].appt;
-						delete aggregator[(leng - 1)]["appt"].userid;
-						delete aggregator[(leng - 1)]["appt"].location;
-						delete aggregator[(leng - 1)]["appt"].active;
-					}				
-				}//if current bar
-			}//for loop
-			if(opts){console.log(opts);}
-			resolve(aggregator);		
+			} else {
+				var aggregator = [];
+				var currentBar = ""; var currentPIndex = -1;
+				var totalVotes = 0;
+				var vRay = [];
+				for (var i = 0; i < result.length; i++) {
+					var barId = result[i].id || "";
+					if (currentBar !== barId) {
+						currentBar = barId;
+						aggregator.push({
+							id: barId,
+							title: result[i].name,
+							rating: result[i].rating,
+							coordinates: result[i].coordinates,
+							price: result[i].price,
+							display_phone: result[i].display_phone,
+							image_url: result[i].image_url,
+							url: result[i].url
+						});
+						if (opts) {
+							let leng = aggregator.length;
+							aggregator[(leng - 1)]["appt"] = result[i].appt;
+							delete aggregator[(leng - 1)]["appt"].userid;
+							delete aggregator[(leng - 1)]["appt"].location;
+							delete aggregator[(leng - 1)]["appt"].active;
+						}
+					}//if current bar
+				}//for loop
+
+				if (opts) { console.log(opts); }
+				resolve(aggregator);
+			}//passes "array" test
 		});
 	}//barBuilder
-	
-//	app.route('/bars/db')
-//	.get(isLoggedIn, barsHandler.getAppts)	
-//	.post(isLoggedIn, barsHandler.addAppt)
-//	.delete(isLoggedIn, barsHandler.deleteAppt);
 
+		//accepts JSON array of yelp businesses, then outputs JSON for client
+		//accepts a "time" to refine db query to "relevant" dates
+		function barBuilder2(result, timeframe){
+			return new Promise((resolve, reject)=>{
+				console.log("barBuilder2 callback");
+				if(!Array.isArray(result)){
+					console.log(result);
+					reject("input not an array");
+				} else {
+					promisifier(result, timeframe)
+					.then((promBack) => {						
+						resolve(promBack);
+					})
+					.catch((e) => {
+						console.log(e);
+					})
+				}
+			});
+			function promisifier(barData, timeframe){
+				return new Promise((resolve, reject) => {
+					//query pgsql with bar data
+					apptQMaker(barData, timeframe)
+					.then((queryArray) => {
+						var poolAQ = new pg.Pool(config);
+						let text = queryArray[0];
+						let values = queryArray[1];
+						//connect and query postgresql db
+						poolAQ.connect()
+						.then(client => {
+							console.log('pg-connected: promisifier')
+							client.query(text, values, function (err, resultAQ){
+								if(err){ 
+									console.log("get appts error");
+									console.log(resultAQ);
+									reject(err);	
+								} else{
+									let rc = resultAQ.rowCount;
+									client.release();
+									if(rc == 0){ //resolve an empty array
+										resolve([]);
+										console.log("empty results");
+									} else {
+										resolve(resultAQ.rows);
+									}//else
+								}//no error
+							});//client.query
+						})//pool
+						.catch((e) => { console.error(e);});						
+					})//after query resolves
+					.catch((e) => { console.error(e);})
+				});//return statement
+			}//promisifier
+
+			//used on each bar object			
+			function apptQMaker(barz, timeframe){
+				return new Promise((resolve, reject) => {
+					//query for only active "true" appointments
+					var text = "SELECT yelpid, count(*) FROM appts WHERE NOT active = false AND timestamp >= $1 ";
+					//placeholder for values
+					const values = [];					
+					//insantiate an estimated locale time (72 hours before now)
+					console.log(timeframe);
+					var time = new Date(timeframe);					
+					time.setDate(time.getDate() - 0);
+					values.push(time.toISOString());	//$1
+					console.log(time.toISOString());
+					if(Array.isArray(barz)){
+						//yes> add each barid and text to the arrays
+						console.log(Array.isArray(barz) + " : is array check : apptQMAKER");
+						let cap = barz.length - 1;
+						var combNots = barz.reduce( function (acc, cVal, cInd, array) {
+							//add the barid
+								values.push(cVal.id);
+								if(cInd < cap){
+									return acc.concat(('$' + (2 + cInd) + ', '));
+								}
+								else{
+									return acc.concat(('$' + (2 + cInd)));
+								}	
+							}, (text.concat(	' AND yelpid IN ('	))
+						);						
+						resolve([ combNots.concat(') GROUP BY yelpid'), values]);
+					}				
+					else{
+						console.log(Array.isArray(barz) + " : is array check : apptQMAKER");	
+						//no>return the text/values:
+						resolve([text, values]);					
+					}//else
+				});//return
+			}//apptQMaker
+		}//barBuilder2
+	
 	//search DB for bar data that user owns//'GET' to /bars/db
 	this.getAppts = function (req, res) {
 		console.log('handler.server.js.getAppts');		
 		var pool = new pg.Pool(config);
-
 		function queryMaker(){
 			return new Promise((resolve, reject) => {
 				//query for only active "true" appointments
@@ -255,40 +377,7 @@ function BarsHandler () {
 						res.status(200);
 						res.json({barsFound: "none"});
 					} else {					
-						/*
-						var bodies;// = [];
-						var intervalT = 0;
-						var multiPass = result.rows.forEach( function (pgResp) {
-							let promToP;					
-							setTimeout(function(){
-								promToP = yelpSingle(pgResp, null);
-								if(bodies){								
-									bodies.push(promToP);
-								} else {
-									bodies = [];
-									bodies.push(promToP);
-								}
-							}, intervalT += 100);
-							console.log(intervalT);
-						});								
-						*/
-/* 
-						var invalidEntries = 0;
-						function isArray(obj) {
-							return obj !== undefined && typeof(obj) === 'array' && !isNaN(obj);
-						}
-						function filterByID(item) {
-							if (isArray(item.id)) {
-								return true;
-							} 
-							else{
-								invalidEntries++;
-								return false;
-							}						 
-						}
-						var arrByID = arr.filter(filterByID);
-						console.log('Filtered Array\n', arrByID); 
- */
+						
 						const promiseSerial = funcs =>
 							funcs.reduce((promise, func) =>
 								promise.then(result => func().then(Array.prototype.concat.bind(result))),

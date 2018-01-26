@@ -64,6 +64,7 @@ var AUTHLIB = AUTHLIB || (function () {
 			var clock = document.getElementById('clock-time') || null;			
 			function makeClock(){
 				
+				let cWrap = document.createElement("div");				
 				var now = new Date(Date.now());				
 				let dayForm = "";
 				switch (now.getDay()) {
@@ -75,23 +76,61 @@ var AUTHLIB = AUTHLIB || (function () {
 		                           case 5:	dayForm = "Friday";	break;
 		                           case 6:	dayForm = "Saturday";	break;
 		                           default: dayForm = "";
-				}		                           
-//				return (now.toLocaleString() + "<br>" + "tonight, " +dayForm);
-				return (now.toDateString() + "<br>" + now.toTimeString().substring(0,8));
+				}
+				// now.toTimeString().substring(0,8))
+				//inspect each char
+				//return a div with correct src
+				//update existing divs
+				
+				let cFace = document.querySelector("#clockface")  || null;
+				if (cFace == null) {
+					cFace = document.createElement("div");
+					cFace.id = "clockface";
+					//hh
+					let ch1 = document.createElement("img"); ch1.id = "c1"; ch1.className = "c-dig"; 
+					let ch2 = document.createElement("img"); ch2.id = "c2"; ch2.className = "c-dig"; 
+					let cc1 = document.createElement("img"); cc1.id = "c3"; cc1.className = "c-dig"; 
+					//mm
+					let cm1 = document.createElement("img"); cm1.id = "c4"; cm1.className = "c-dig"; 
+					let cm2 = document.createElement("img"); cm2.id = "c5"; cm2.className = "c-dig"; 
+					let cc2 = document.createElement("img"); cc2.id = "c6"; cc2.className = "c-dig"; 
+					//ss
+					let cs1 = document.createElement("img"); cs1.id = "c7"; cs1.className = "c-dig"; 
+					let cs2 = document.createElement("img"); cs2.id = "c8"; cs2.className = "c-dig"; 
+					cFace.appendChild(ch1);					cFace.appendChild(ch2);
+					cFace.appendChild(cc1);
+					cFace.appendChild(cm1);					cFace.appendChild(cm2);
+					cFace.appendChild(cc2);
+					cFace.appendChild(cs1);					cFace.appendChild(cs2);
+				}
+				else {
+					let tMap =  Array.from(now.toTimeString().substring(0,8));
+					tMap.forEach((digit, ind) => {
+						if(digit == ":"){ digit = ""; }
+						let digHolder = document.querySelector("#c" + (ind+1));
+						digHolder.src="/public/img/c" + digit + ".gif";						
+					});
+				}				
+				let dateStr = document.createElement("span");
+				dateStr.innerHTML = now.toDateString();				
+				cWrap.appendChild(cFace);
+				cWrap.appendChild(dateStr);
+				return (cWrap.innerHTML);
 			}
 			
 			if(apiIcon !== null){
 				clock.innerHTML = makeClock();
 				var intervalID = window.setInterval(myCallback, 1000);				
 				function myCallback() {
-				  clock.innerHTML = makeClock();
+					clock.innerHTML = makeClock();
 				}				
 			}
-
+			// 
 			let refresher = document.querySelector('#fresh-appts');
 			if(refresher !== null){
 				refresher.addEventListener('click', () => {
 					//resets all visible appts
+					refresher.className = refresher.className + " w3-spin"; //spin the image
 					let resetApptsList = document.querySelector("#appts-view");
 					if(resetApptsList.hasChildNodes()){
 						while (resetApptsList.firstChild) {
@@ -288,8 +327,8 @@ var AUTHLIB = AUTHLIB || (function () {
 
 				if(authObj.authStatus == true){
 					authNode.replaceWith(makeDiv()); //login header placement
-					if(document.querySelector("#appts-text") == null){
-						document.querySelector("#profile-container").insertBefore(makeAppts("My Appointments:"),document.querySelector("#appts-view"));
+					if(document.querySelector("#appts-img") == null){
+						document.querySelector("#profile-navi").insertBefore(makeAppts("My Appointments:"),document.querySelector("#fresh-appts"));
 						
 					}					
 					apptFind();					
@@ -309,22 +348,17 @@ var AUTHLIB = AUTHLIB || (function () {
 					loader(false);
 				}//authObj.authStatus false, else
 			}));
-			/*
-			function loginPrompt(){
-				var cButtons = document.querySelectorAll(".poll-wrap-sup") || null;				
-				for (var cButton of cButtons) {
-					if(cButton.className !== "poll-wrap-sup appt-wrap-sup"){
-						//add a new choice to an existing poll					
-							
-					}//classname check
-				}//loop
-			}
-			*/						
+
 			function makeAppts(addText){
-				var newSpanTxt = document.createElement("h3");
+				var newSpanTxt = document.createElement("img");
 //				newSpanTxt.className = "alternate";
-				newSpanTxt.id = "appts-text";				
-				newSpanTxt.innerHTML = "My Appointments: " + addText;				
+				newSpanTxt.id = "appts-img";
+				newSpanTxt.src = "public/img/myappointments.png";
+				newSpanTxt.alt = "My Appointments: " + addText;
+				newSpanTxt.addEventListener('click', () => {					
+					let clickEv = new Event('click'); 
+					document.querySelector("#fresh-appts").dispatchEvent(clickEv);										
+				}, false);
 				return newSpanTxt;
 			}
 			
@@ -332,7 +366,7 @@ var AUTHLIB = AUTHLIB || (function () {
 			function apptFind() {
 				var tempText = document.querySelector("#appts-text");					
 				if(tempText!==null){
-					tempText.innerHTML = "Loading...";
+					tempText.innerHTML = "Loading...";					
 					//toggle lock pic
 					loader(true);
 				}
@@ -359,7 +393,7 @@ var AUTHLIB = AUTHLIB || (function () {
 				//2. get appt-key of those appts
 				//3. append the appt-keys to the request path
 				//xhr
-				ajaxFunctions.ready(ajaxFunctions.ajaxRequest('GET', request, false, function (data) {
+				ajaxFunctions.ready(ajaxFunctions.ajaxRequest('GET', request, false, function (data) {					
 					if(tempText!==null){ tempText.innerHTML = "My Appointments:";}
 					var apptsFound = JSON.parse(data);
 					console.log(apptsFound);
@@ -376,13 +410,16 @@ var AUTHLIB = AUTHLIB || (function () {
 						apptsFound.sort(function(a, b){
 							let aTime = new Date(a.appt["timestamp"]);
 							let bTime = new Date(b.appt["timestamp"]);
-							return bTime.getTime() - aTime.getTime();
+							return aTime.getTime() - bTime.getTime();
 						});
 						divCB(apptsFound, "appts-view", {"classText": " appt-wrap-sup"}, null);
 						addDeleteDiv();
 						//toggle lock pic
 						loader(false);
-					}		
+					}
+					//unspin the icon
+					let refreshIcon = document.querySelector('#fresh-appts')
+					refreshIcon.className = refreshIcon.className.substring(0,(refreshIcon.className.length - 9));
 				}));			
 			
 			function addDeleteDiv(){
@@ -416,23 +453,24 @@ var AUTHLIB = AUTHLIB || (function () {
 							 let that = this;
 							 if(confirmDel == true){
 //							 	window.addEventListener("unload", function(){
-								    ajaxFunctions.ajaxRequestLim('DELETE', '/bars/db?appt=' + keyS, 0, function (err, response) {
-									    if(err){ console.log("request error \'delete\'");}
-									    else{
-	//									    document.querySelectorAll(".appt-wrap-sup").querySelector();
+								    ajaxFunctions.ajaxRequestLim('DELETE', '/bars/db?appt=' + keyS, 5000, function (err, response, status) {
+									    if (err) { console.log("request error \'delete\'"); }
+									    else {
+										//     let apptsFrame = document.querySelector("#appts-view");
+										// apptsFrame.querySelector("");
 										    let nodeToRemove = that.parentNode.parentNode;
-										    if(nodeToRemove.className == "poll-wrap-sup appt-wrap-sup") {
-											   let nPare = nodeToRemove.parentNode;
-											   nPare.removeChild(nodeToRemove);
+										    if (nodeToRemove.className == "poll-wrap-sup appt-wrap-sup") {											    
+											    let nPare = nodeToRemove.parentNode;
+											    nPare.removeChild(nodeToRemove);
 										    }
 										    let pollRoot = document.querySelector("#poll-view");
-										    let resetThis = pollRoot.querySelector("div[appt-key='"+ keyS + "']");
+										    let resetThis = pollRoot.querySelector("div[appt-key='" + keyS + "']");
 										    //existing super-bar node
-										    if(resetThis !== null){
-											    resetThis.setAttribute("style","");
+										    if (resetThis !== null) {
+											    resetThis.setAttribute("style", "");
 											    resetThis.querySelector(".show-text").innerHTML = "click to book...";
-											    resetThis.querySelector(".show-text").setAttribute("style","");
-											    resetThis.removeAttribute("appt-key");										    
+											    resetThis.querySelector(".show-text").setAttribute("style", "");
+											    resetThis.removeAttribute("appt-key");
 										    }
 									    }//else err
 								    });

@@ -21,7 +21,7 @@ body {
 	font-size: 16px;
 	margin: 0;
 	padding: 0;
-	background-color: #e6e6e6;
+	background-color: #f5deb7;
 }
 
 header {
@@ -156,7 +156,7 @@ header a ~ p {
   z-index: 99;
   text-align: center
 }
-
+.w3-spin{animation:w3-spin 2s infinite linear}@keyframes w3-spin{0%{transform:rotate(0deg)}100%{transform:rotate(359deg)}}
 .w3-animate-fading{animation:fading 10s infinite}@keyframes fading{0%{opacity:0}50%{opacity:1}100%{opacity:0}}
 
 #loading-image {
@@ -165,17 +165,22 @@ header a ~ p {
  left: 50%;
  z-index: 100;
 }
+#profile-navi{
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+}
 
 #fresh-appts{
-  height: 20px;
+  height: 32px;
     text-align: right;
     position: relative;
     cursor: pointer;
     font-style: italic;
-    background-color: #e6e6e6;
+    /* background-color: #e6e6e6; */
     border-radius: 3px;
     color: #999999;
-    padding: 2px 2px 0 0;
+    margin: 0 5% 0 0;
 }
 #fresh-appts:hover{
 background-color: #0073bb;
@@ -186,10 +191,9 @@ color: #e6e6e6;
   transform: scale(0.9, 0.9);
   }
 
-
 #appts-text{
   height: 35px;
-  padding: 5px 0 0 0;
+  padding: 5px 0 0 0;  
 }
 
 /****** Logo Div Styling ******/
@@ -200,6 +204,11 @@ img {
 
 .clementine-text { /* Styling for the Clementine.js text */
 	color: #41a700 ;
+}
+
+#zip-image{
+  width:300px;
+  height: auto;
 }
 
 #api-icon{
@@ -305,7 +314,7 @@ span {
 #zipSearch{
 	text-align: center;
 	height: 50px;
-	margin: 10px;
+	margin: 2px;
 	font-size: x-large;	
 	width: 90%;
 }
@@ -313,9 +322,13 @@ span {
 .center-bar{
 	display: flex;
 	flex-direction: column;
-	align-items: center;
+  align-items: center;
+  margin: 0 0 10px 0;
 }
 
+#clockface {
+  padding: 0 0 5px 0;
+}
 
 /******* poll styles **********/
 #pollDb{
@@ -323,10 +336,29 @@ span {
 }
 
 #appts-view{
-	padding: 10px 5% 10px 5%;
-  background-color: #f5deb7;
-  
+	padding: 5px 5% 10px 5%;
+  background-color: #f5deb7;  
 }
+
+#appts-img{
+  height: 50px;
+  width: auto;
+  cursor: pointer;
+  margin: 0 0 0 30px;
+}
+
+.appt-count{
+  color: #0073bb;
+  margin: 5px 5px 10px 5px;
+  padding: 2px 5px 2px 5px;
+  text-align: center;
+  border-radius: 10px;
+  border-color: black;
+  border-width: thin;
+  border-style: dotted;
+  font-size: smaller;
+}
+
 .poll-wrap-sup{
 	/* padding:10px 10px 10px 10px;
 	border: grey; */
@@ -409,7 +441,12 @@ span {
 }
 
 .poll-view-list{
-  padding: 77px 2% 10px 2%;
+  padding: 5px 2% 10px 2%;
+}
+
+#yourarea{
+  height: 50px;
+  padding: 0 0 0 20px;
 }
 
 ul.poll-view-list, #profile-container{
@@ -775,9 +812,7 @@ h4,h4 b {
 h4 b {
  font-weight:400
 }
-p {
- /* margin-bottom:12px */
-}
+
 a {
  color:#0073bb;
  text-decoration:none
@@ -5233,9 +5268,6 @@ html:not(.ie9) .dropdown--fade.fade-initial-load.dropdown--arrow .dropdown_toggl
 .modal--image .modal_dialog>img {
  max-width:100%;
  max-height:100%
-}
-body {
- background:#f5f5f5
 }
 .body--webview {
  background:#fff

@@ -30,8 +30,13 @@ var MYLIBRARY = MYLIBRARY || (function () {
 				barFind(i); 
 			}     
 			function barFind(searchValue) {
-				var request = ('/bars/?zip=' + searchValue );  
-				ajaxFunctions.ready(ajaxFunctions.ajaxRequest('GET', request, false, function (data) {
+				let tDay = new Date();				
+				let timeFrame = new Date(tDay.getFullYear(), tDay.getMonth(), tDay.getDate())
+				if(tDay.getHours() >= 20){										
+					timeFrame.setDate(toDate.getDate() + 1);
+				}
+				var request = ('/bars/?zip=' + searchValue  + "&timeframe=" + timeFrame.toISOString());  
+				ajaxFunctions.ready(ajaxFunctions.ajaxRequestLim('GET', request, 7000, function (err, data, status) {
 					document.querySelector('#poll-view').innerHTML = "";
 					var barsFound = JSON.parse(data);
 		console.log(barsFound);		
@@ -44,7 +49,7 @@ var MYLIBRARY = MYLIBRARY || (function () {
 		});
 	},
 	barFormer : function(jsonData, parentIdString, optionsBF, cb) {
-		let pollView = document.getElementById(parentIdString);  //ul		
+		var pollView = document.getElementById(parentIdString);  //ul		
 		if(pollView.hasChildNodes()){
 			//clears the existing...
 			// while (pollView.firstChild) {
@@ -56,11 +61,18 @@ var MYLIBRARY = MYLIBRARY || (function () {
 			//create a div for each poll
 			var pId = ("poll-").concat(i);
 			var jone = jsonData[i];						
-			addElement(pId, pollView, jone, optionsBF, cb);			
+			addElement(pId, pollView, jone, optionsBF, cb);
+			if(jone.count > 0){
+				let cNodes = pollView.childNodes;
+				let lastChild = pollView.childNodes[cNodes.length - 1];
+				pollView.removeChild(lastChild);
+				pollView.insertBefore(lastChild, pollView.childNodes[0]);
+			}
 		}
-//		if(passedInF !== null){
-//			passedInF();	
-//		}		
+		//move "going" bars to top of results
+		// if(passedInF !== null){
+
+		// }		
 	            function addElement (divName, parent, polljone, options) {
 	                      var pollCopy = JSON.parse(JSON.stringify(polljone));
 	                      var pollChoices = pollCopy.pollData;
@@ -72,8 +84,8 @@ var MYLIBRARY = MYLIBRARY || (function () {
 			      
 			      //contains info divs for appt
 	                      var newWrapInfo = document.createElement("div");
-	                      newWrapInfo.className = "poll-wrap-info";
-	                      
+	                      newWrapInfo.className = "poll-wrap-info";   
+
 	                      var titleDiv = document.createElement("div");
 	                         titleDiv.className = "poll-title";                  
 	                      var titleA = document.createElement("a"); 
@@ -81,7 +93,16 @@ var MYLIBRARY = MYLIBRARY || (function () {
 	                         titleA.innerHTML = polljone.title;
 	                         titleA.href = (pollCopy["url"]);
 	                         titleDiv.appendChild(titleA);               
-	                         newWrapInfo.appendChild(titleDiv);
+				 newWrapInfo.appendChild(titleDiv);
+
+				//div to show number of appts
+				var countDiv = document.createElement("div");
+				countDiv.className = "appt-count";
+				if (polljone.count >= 0) {
+					countDiv.innerHTML = polljone.count + " GOING";
+					newWrapInfo.appendChild(countDiv);
+				}
+
 	                      var newWrap = document.createElement("div");
 	                         newWrap.className = "poll-wrap";
 	                         newWrapInfo.appendChild(newWrap);
@@ -190,9 +211,15 @@ var MYLIBRARY = MYLIBRARY || (function () {
 				.catch(e=> console.log(e));	                    	  
 	                    	parent.appendChild(newWrapSup);
 	                      }
-	                      else{	                    	  
-	                    	  newWrapSup.className =  newWrapSup.className + options.classText;
-	                    	  parent.appendChild(newWrapSup);
+	                      else{
+				newWrapSup.className =  newWrapSup.className + options.classText;				
+				// var insertedNode = parentNode.insertBefore(newNode, referenceNode);
+				if(parent.hasChildNodes()){
+					let firstNode = parent.childNodes[0];
+					parent.insertBefore(newWrapSup, firstNode);
+				} else {
+					parent.appendChild(newWrapSup);
+				}
 	                      }
 	                      if(cb !== null){
 	                    	  try{cb();}catch(TypeError){console.log("no cb provided");}	  
