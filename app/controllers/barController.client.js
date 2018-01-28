@@ -33,7 +33,7 @@ var MYLIBRARY = MYLIBRARY || (function () {
 				let tDay = new Date();				
 				let timeFrame = new Date(tDay.getFullYear(), tDay.getMonth(), tDay.getDate())
 				if(tDay.getHours() >= 20){										
-					timeFrame.setDate(toDate.getDate() + 1);
+					timeFrame.setDate(timeFrame.getDate() + 1);
 				}
 				var request = ('/bars/?zip=' + searchValue  + "&timeframe=" + timeFrame.toISOString());  
 				ajaxFunctions.ready(ajaxFunctions.ajaxRequestLim('GET', request, 7000, function (err, data, status) {
