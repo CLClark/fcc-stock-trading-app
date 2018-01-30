@@ -43,16 +43,16 @@ ready: function ready (fn) {
 		};		
 		
 		function removeIt(childN){
-			console.log(document.getElementById("xhr-track"));
+// console.log(document.getElementById("xhr-track"));
 			document.documentElement.removeChild(childN);
-			console.log(document.getElementById("xhr-track"));
+// console.log(document.getElementById("xhr-track"));
 		}
 		function checkIt(str){
 			if(document.querySelector(str) !== null){
-				console.log("node present");	
+// console.log("node present");	
 				return true;
 			}else{				
-				console.log("node absent");	
+// console.log("node absent");	
 				return false;
 			}
 		}

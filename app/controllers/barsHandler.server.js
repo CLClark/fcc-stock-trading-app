@@ -14,7 +14,6 @@ function BarsHandler () {
 	//find all active bars (for app home page)
 	this.allBars = function (req, res) {
 // console.log('allBars callback');
-		//TODO find all bars in searched locale
 		//yelp api query
 		//save to session
 		var zipLocation = req.query.zip;
