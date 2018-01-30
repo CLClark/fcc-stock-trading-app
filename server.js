@@ -5,18 +5,19 @@ if(process.env.LOCAL !== true){
 }
 var express = require('express');
 var routes = require('./app/routes/index.js');
-var passport = require('passport');
 var pg = require('pg');
 var session = require('express-session');
 var pgSession = require('connect-pg-simple')(session);
 var parse = require('pg-connection-string').parse;
 var config = parse(process.env.DATABASE_URL);
+// var passport = require('passport');
+
 config.ssl = true;
 
 var http = require('http');
 
 var app = express();
-require('./app/config/passport')(passport);
+// require('./app/config/passport')(passport);
 
 app.use('/controllers', express.static(process.cwd() + '/app/controllers'));
 app.use('/public', express.static(process.cwd() + '/public'));
@@ -35,10 +36,10 @@ app.use(session({
 	saveUninitialized: true
 }));
 
-app.use(passport.initialize());
-app.use(passport.session());
+// app.use(passport.initialize());
+// app.use(passport.session());
 
-routes(app, passport);
+// routes(app, passport);
 var port = process.env.PORT || 8080;
 
 http.createServer(app).listen(port, function () {

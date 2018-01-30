@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+
+<html>
+
+<head>
+	<title>2 night: FCC Nightlife Coordination App</title>
+
+	<link href="/public/css/main.css" rel="stylesheet" type="text/css">
+	<!--Load the AJAX API-->
+	<script type="text/javascript" src="common/ajax-functions.js"></script>	
+	<script type="text/javascript" src="controllers/barController.client.js"></script>
+	<script type="text/javascript" src="controllers/authController.client.js"></script>
+
+	<script type="text/javascript">
+		MYLIBRARY.init([MYLIBRARY.barFormer, null, null]);	
+		AUTHLIB.init([MYLIBRARY.barFormer,false, AUTHLIB.authScript]);
+	</script>
+</head>
+
+<header>
+</header>
+<body>	
+	<div id="navi" class="navi-menu">
+		<div id="api-icon"></div>
+		<div id="home-icon"></div>
+		<div class="container" id="welcome-container">
+			<p>Welcome to Nightlife Coordination App 2night<span id="display-name"></span>!</p>
+			
+			<span id="auth-container"></span>					
+			<br>
+			
+			<div class="fb-login-button" data-max-rows="1" data-size="large" data-button-type="continue_with" data-show-faces="false" data-auto-logout-link="true" data-use-continue-as="false">
+			</div>
+			<div id="status"></div>		
+		</div>
+	</div>
+
+	<div id="fb-root"></div>
+	<div id="clock">
+		<h3 id="clock-time">
+			tick' tock'
+		</h3>
+	</div>
+	<div class="container center-bar">
+		<img id="zip-image" src="public/img/enteryourzip.png" alt="enter your zip:"/>
+		<input type="text" id="zipSearch" name="q" placeholder="Zip code (US)">				
+	</div>
+	<div id="events-sup">
+		<div id="loading" lock="on">
+			<div class="w3-animate-fading">
+				<img id="loading-image" src="public/img/2night.gif" alt="Loading..." />
+			</div>			
+		</div>
+		<!--Div that will hold the polls-->    
+		<div id="pollDb">
+			<img id="yourarea" src="public/img/yourarea.png" alt="Results" />
+			<ul id="poll-view" class="poll-view-list"></ul>
+		</div>
+
+		<div id="profile-container" style="display: none">
+			<div id="profile-navi">
+				<img id="fresh-appts" src="public/img/refresh.png" alt="Reload my Appointments" />			
+			</div>			
+			<ul id="appts-view" ></ul>
+		</div>	
+	</div>	
+</body>
+<footer>		
+	<script type="text/javascript">	
+		AUTHLIB.navi();
+		AUTHLIB.authScript(true);
+		MYLIBRARY.barProducer(AUTHLIB.chooser);
+	</script>		
+</footer>
+
+</html>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
