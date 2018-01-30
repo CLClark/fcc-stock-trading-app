@@ -13,7 +13,7 @@ ready: function ready (fn) {
 
 	document.addEventListener('DOMContentLoaded', fn, false);
 },
-	ajaxRequest: function ajaxRequest (method, url, syncBoo, callback) {
+	ajaxRequest: function ajaxRequest (method, url, syncBool, callback) {
 		var xmlhttp = new XMLHttpRequest();
 
 		xmlhttp.onreadystatechange = function () {

@@ -69,10 +69,7 @@ var MYLIBRARY = MYLIBRARY || (function () {
 				pollView.insertBefore(lastChild, pollView.childNodes[0]);
 			}
 		}
-		//move "going" bars to top of results
-		// if(passedInF !== null){
 
-		// }		
 	            function addElement (divName, parent, polljone, options) {
 	                      var pollCopy = JSON.parse(JSON.stringify(polljone));
 	                      var pollChoices = pollCopy.pollData;
