@@ -4,7 +4,8 @@ var path = process.cwd();
 var queue = require('queue')
 var BarsHandler = require(path + '/app/controllers/barsHandler.server.js');
 
-module.exports = function (app, passport) {
+module.exports = function (app){
+	// , passport) {
 
 	/* function isLoggedIn(req, res, next) {
 		if (req.isAuthenticated()) {
@@ -87,9 +88,9 @@ module.exports = function (app, passport) {
 		.get(barsHandler.allBars);
 		// .post(isLoggedIn, barsHandler.addBar);
 
-	app.route('/bars/db')
+	/* app.route('/bars/db')
 		.get(isLoggedIn, barsHandler.getAppts)
 		.post(isLoggedIn, barsHandler.addAppt)
 		.delete(isLoggedIn, barsHandler.deleteAppt);
-
+ */
 };

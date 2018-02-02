@@ -36,7 +36,7 @@ ready: function ready (fn) {
 		xmlhttp.timeout = timeout;
 		xmlhttp.ontimeout = function () {
 			let err = "timeout";
-			callback(err, null);
+			callback(err, null, xmlhttp.status);
 			//remove global statusifier
 			removeIt(xhrTrack);
 			console.error("The request for " + url + " timed out.");
@@ -56,11 +56,12 @@ ready: function ready (fn) {
 				return false;
 			}
 		}
-		if(checkIt("#xhr-track")){
-			callback("request aborted: please wait for response", null);
-			xmlhttp.abort();
-		}
-		if(!checkIt("#xhr-track")){
+		// if(checkIt("#xhr-track")){
+			// callback("request aborted: please wait for response", null);
+			// xmlhttp.abort();
+			//TODO put in queue instead of aborting
+		// }
+		// if(!checkIt("#xhr-track")){
 			//global statusifier
 			var xhrTrack = document.createElement("data");
 			xhrTrack.id	 = "xhr-track";
@@ -82,9 +83,9 @@ ready: function ready (fn) {
 			};
 			xmlhttp.open(method, url);
 			xmlhttp.send();
-		}
-		else{
-			callback("error: request out", null);
-		}
+		// }
+		// else{
+			// callback("error: request out", null);
+		// }
 	},
 };

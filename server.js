@@ -1,8 +1,8 @@
 'use strict';
 
-if(process.env.LOCAL !== true){
+// if(process.env.LOCAL !== true){
 	require('dotenv').load();
-}
+// }
 var express = require('express');
 var routes = require('./app/routes/index.js');
 var pg = require('pg');
@@ -14,6 +14,10 @@ var config = parse(process.env.DATABASE_URL);
 
 config.ssl = true;
 
+const Deepstream = require('deepstream.io')
+const server = new Deepstream();//'/app/config/config.yml')
+server.start();
+
 var http = require('http');
 
 var app = express();
@@ -24,7 +28,6 @@ app.use('/public', express.static(process.cwd() + '/public'));
 app.use('/common', express.static(process.cwd() + '/app/common'));
 
 var pgPool = new pg.Pool(config);
-
 app.use(session({
 	store: new pgSession({
 		pool: pgPool,                // Connection pool 
@@ -39,7 +42,9 @@ app.use(session({
 // app.use(passport.initialize());
 // app.use(passport.session());
 
+routes(app);
 // routes(app, passport);
+
 var port = process.env.PORT || 8080;
 
 http.createServer(app).listen(port, function () {

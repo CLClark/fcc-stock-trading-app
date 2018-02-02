@@ -1,36 +1,34 @@
 {
-  "name": "clclark-clementinejs-fcc",
-  "version": "1.0.1",
+  "name": "clclark-stocks-fcc",
+  "version": "2.0.1",
   "description": "Built from the clementinejs-fcc boilerplate",
   "main": "server.js",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/johnstonbl01/clementinejs-fcc"
+    "url": "https://github.com/CLClark/fcc-stock-trading-app.git"
   },
   "homepage": "http://localhost:8080/",
-  "bugs": "https://github.com/johnstonbl01/clementinejs-fcc/issues",
+  "bugs": "",
   "keywords": [
-    "MongoDB",
-    "Mongoose",
+    "postgressql",
     "full stack",
     "Express",
     "Node",
-    "javascript",
-    "boilerplate"
+    "javascript"
   ],
   "scripts": {
     "start": "node server.js"
   },
-  "authors": "Blake Johnston, Chris L Clark",
+  "authors": "Chris L Clark",
   "license": "MIT",
   "dependencies": {
+    "browserify": "^15.2.0",
     "connect-pg-simple": "^4.2.1",
     "cors": "^2.8.4",
+    "deepstream.io": "^3.1.1",
     "dotenv": "^1.2.0",
     "express": "^4.16.2",
     "express-session": "^1.15.6",
-    "passport": "^0.3.2",
-    "passport-facebook": "^2.1.1",
     "pg": "^7.4.1",
     "queue": "^4.4.2"
   }
