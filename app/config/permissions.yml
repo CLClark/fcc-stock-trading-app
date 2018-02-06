@@ -1,0 +1,6 @@
+record:
+  stock/*:
+    write: ""
+    delete: "data !== MSFT"
+
+event:

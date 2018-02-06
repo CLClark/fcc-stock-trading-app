@@ -3,15 +3,15 @@
 var STREAMLIB = STREAMLIB || (function () {
 	// var divCB;
 	var extScript; //deepstream.js
-	var ourKey = ;
+	var ourKey = "RFYNJQR3B41RMNYG";
 	var dsClient;
 	var apiKey;
 	// var authScriptCB;
 	// var apiAuth = appUrl + '/auth/check';
 	// var defSearch = null;
-	// var loader;	
+	// var loader;
 	var _args = {}; // private
-	const charts = [];
+	var charts = [];
 
 	//polyfill:
 	if (window.NodeList && !NodeList.prototype.forEach) {
@@ -136,7 +136,8 @@ var STREAMLIB = STREAMLIB || (function () {
 						if(data){
 							console.log(data);
 						}						
-						resolve(client)
+						resolve(client);
+						defaultStock();
 						console.log("login success");
 						
 						// data will be an object with {id: 'user-id'} plus
@@ -155,6 +156,29 @@ var STREAMLIB = STREAMLIB || (function () {
 						// if the maximum number of authentication
 						// attempts has been exceeded.
 					}
+					function defaultStock(){
+						if (dsClient.getConnectionState() == "OPEN") {
+							//check if stock already exists...
+							dsClient.record.has("stock/MSFT", (error, bool) => {
+								if (bool == true) {
+									console.log("MSFT Default Stock");
+								}
+								else {		
+									//emit add event
+									console.log("client open; telling node server");
+									dsClient.event.emit("stocks/add", "MSFT");
+		
+									//add stock to list records
+									var id = "stock/MSFT"; //dsClient.getUid();
+									dsClient.record.getRecord(id).set("symbol", "MSFT");
+									let stocks = dsClient.record.getList("stocks");
+									stocks.whenReady((list) => {
+										list.addEntry(id);
+									});
+								}//else
+							});//has callback		
+						}
+					}//defaultStock								
 				});				
 				// client.getConnectionState() will now return 'AUTHENTICATING'
 			});
@@ -164,12 +188,60 @@ var STREAMLIB = STREAMLIB || (function () {
 		dsAdd: function (data){
 			console.log("dsAdd: " + data);
 			return new Promise(function (resolve, reject) {
-				let stockSub = document.createElement("div");
-				stockSub.className = "stock-sub";
-				stockSub.id = data;
-				stockSub.innerHTML = data;
-				let stocksView = document.querySelector("#stocks-view");
-				stocksView.appendChild(stockSub);
+
+				function entryMaker(){
+					let stockSub = document.createElement("div");
+					stockSub.className = "stock-sub";
+					stockSub.id = data;
+
+					let symbol = document.createElement("div");
+					symbol.className = "stock-sub-symbol"
+					symbol.innerHTML = data;
+					stockSub.appendChild(symbol);
+					stockSub.appendChild(xMaker());
+					return stockSub;				
+				}
+				function xMaker(){
+					let xButton = document.createElement("button");
+					xButton.setAttribute("symbol", data);
+					xButton.className = "btn";
+					xButton.addEventListener("click", function(arg){
+						let which = this.getAttribute("symbol");
+						let superNode = document.querySelector("#"+ data);
+						superNode.setAttribute("display","none");
+						deleter(which);
+					}.bind(xButton));
+					xButton.innerHTML = "x";
+					return xButton;
+				}
+
+				//tells node to delete this chart
+				function deleter(searchValue){
+					if (dsClient.getConnectionState() == "OPEN") {
+						//check if stock already gone...
+						dsClient.record.has("stock/" + searchValue, (error, bool) => {
+							if (bool == false) {
+								console.log("already gone!");
+							}
+							else {
+								//TODO: check if the symbol is valid, before emitting	
+								//emit add event
+								console.log("client open; telling node server");
+								dsClient.event.emit("stocks/remove", searchValue);
+	
+								//draw a new chart
+								//remove the symbol from the global stock array
+							}//else
+						});//has callback					
+					}//open client
+				}//tellnode								
+
+				//add to list
+				let stocksView = document.querySelector("#stocks-view");					
+				stocksView.appendChild(entryMaker());
+				
+
+				resolve();
 			});//promise
 		},
 
@@ -179,16 +251,19 @@ var STREAMLIB = STREAMLIB || (function () {
 			//resolves to a string message
 			return new Promise(function (resolve, reject) {
 				let toRemove = document.querySelector("#" + stockSym);
-				if(toRemove == null || toRemove == "undefined"){
+				if (toRemove == null || toRemove == "undefined") {
 					reject("dsRemove: stock node not found");
 				}
-				else{
+				else {
 					let parentNode = toRemove.parentNode;
 					parentNode.removeChild(toRemove);
-					if( document.querySelector("#" + stockSym) == null || document.querySelector("#" + stockSym) == "undefined")
-					resolve(stockSym);
-					else{
-					reject("dsRemove: node still found");
+					if (document.querySelector("#" + stockSym) == null || document.querySelector("#" + stockSym) == "undefined") {
+						//remove from global array
+						charts = charts.filter(stck => stck.symbol !== stockSym.toUpperCase());
+						resolve(stockSym);
+					}
+					else {
+						reject("dsRemove: node still found");
 					}
 				}
 			});//promise
@@ -263,16 +338,7 @@ var STREAMLIB = STREAMLIB || (function () {
 		},
 
 		asyncSetup: function(){
-/* 
-			var adder = new Event("addStock");
-			// Listen for the event.
-			var staticText = document.querySelector('#poll-view') || null;
-			if (staticText !== null) {
-				document.querySelector('#poll-view').addEventListener("addStock", function (e) {
-					this.innerHTML = "now adding, Please hold...";
-				}, false);
-			}			
- */			
+						
 		      
 			document.querySelector('input#zipSearch').addEventListener("keypress", function (e) {
 				var i = document.querySelector('#zipSearch').value;
@@ -285,7 +351,7 @@ var STREAMLIB = STREAMLIB || (function () {
 					// if (reg.test(i)) {					
 					// Dispatch the event.
 					// document.querySelector('#poll-view').dispatchEvent(adder);
-					tellNode(i);
+					tellNode(i.toUpperCase());
 					// }
 				}
 				// 	// let tDay = new Date();
@@ -354,6 +420,7 @@ var STREAMLIB = STREAMLIB || (function () {
 			function makeNaviDiv() {
 				var aIcon = document.createElement("a");
 				aIcon.href = "/";
+
 				var imgIcon = document.createElement("img");
 				imgIcon.src = "/public/img/vota.png";
 				imgIcon.style = "height: 80px; width: auto;";

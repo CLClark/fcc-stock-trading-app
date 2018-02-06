@@ -36,7 +36,7 @@ app.use(session({
 	secret: process.env.ZOO_COOKIE_SECRET,
 	resave: false,
 	cookie: { maxAge: 2 * 24 * 60 * 60 * 1000 }, // 2 days
-	saveUninitialized: true
+	saveUninitialized: false
 }));
 
 // app.use(passport.initialize());
@@ -45,7 +45,7 @@ app.use(session({
 routes(app);
 // routes(app, passport);
 
-var port = process.env.PORT || 8080;
+var port = process.env.PORT || 8082;
 
 http.createServer(app).listen(port, function () {
 	console.log('Node.js listening on port ' + port + '...');

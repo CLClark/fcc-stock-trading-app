@@ -149,7 +149,7 @@ auth:
 permission:
   # Only config or custom permissionHandler at the moment
   type: config
-  options:
+  options:  
     # Path to the permissionFile. Can be json, js or yml
     path: ./permissions.yml
     # Amount of times nested cross-references will be loaded. Avoids endless loops

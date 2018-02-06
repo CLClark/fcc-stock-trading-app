@@ -48,34 +48,59 @@ var STOCKSWATCH = STOCKSWATCH || (function () {
 
 				//data
 				var dTab = new google.visualization.DataTable();
+	
+				// let allRows = [];
+				stocksArray.forEach(form => {
+					// var dt1 = new google.visualization.DataTable();	
+					if(dTab.getNumberOfColumns() == 0){
+						dTab.addColumn("date", "Date");				
+						dTab.addColumn("number", form.symbol);								
 
-				//format json into dT
-				dTab.addColumn("date", "Date");				
-				dTab.addColumn("number", "Close");
-				dTab.addColumn("string", "Symbol");
-				dTab.addColumn("number", "Volume");
-
-				let allRows = [];
-				stocksArray.forEach(element => {										
-					let elementRows = element.series.map((row) => {
-						let year = parseInt(row.date.substring(0, 4));						
-						let month = (parseInt(row.date.substring(5, 7))+ 1);
-						let day = parseInt(row.date.substring(8));
-						let rDate = new Date();						
-						rDate.setFullYear(year, month, day);
-						return [rDate, row.close, row.symbol, row.volume];
-					});
-					allRows = allRows.concat(elementRows);
-					console.log(element);					
-				});
-				dTab.addRows(allRows);			
+						let elementRows = form.series.map((row) => {
+							let year = parseInt(row.date.substring(0, 4));						
+							let month = (parseInt(row.date.substring(5, 7))+ 1);
+							let day = parseInt(row.date.substring(8));
+							let rDate = new Date(row.date);
+							// rDate.setFullYear(year, month, day);
+							return [rDate, row.close];
+						});						
+						dTab.addRows(elementRows);
+					} else {
+						var dt2 = new google.visualization.DataTable();
+						dt2.addColumn("date", "Date");				
+						dt2.addColumn("number", form.symbol);
+						let tempRows = form.series.map((row) => {
+							let year = parseInt(row.date.substring(0, 4));						
+							let month = (parseInt(row.date.substring(5, 7))+ 1);
+							let day = parseInt(row.date.substring(8));
+							let rDate = new Date(row.date);
+							// rDate.setFullYear(year, month, day);
+							return [rDate, row.close];
+						});
+						dt2.addRows(tempRows);
+						//keep the first column and then each added "column" to dTab
+						let keepCols = [1];
+						for (let i = 2; i < dTab.getNumberOfColumns(); i++) {							
+							keepCols.push(i);
+						}
+							(dTab.getNumberOfColumns() - 1);
+						dTab = google.visualization.data.join(dTab, dt2, "full", [[0,0]], keepCols,[1]);
+					}					
+				});	
+				// console.log(dTab.toJSON());					
 
 				var chart = new google.visualization.AnnotationChart(document.getElementById('chart-super'));
 				var options = {
-					displayAnnotations: true
+					displayAnnotations: false,
+					fill: 40				
 				};
 				//draw
 				chart.draw(dTab, options);
+
+				// window.addEventListener("resize", function(){					
+				// 	chart.draw(this, options);					
+				// 	console.log("resized");          		  
+				//     }.bind(dTab));
 			});
 		},
 

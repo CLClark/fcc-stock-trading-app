@@ -110,10 +110,30 @@ header a ~ p {
 
 #stocks-view{
 	background-color: #010616;
-	    margin: 2px 0px;
-	    flex-basis: 400px;
-	    display: flex;
-	    flex-direction: ;
+	margin: 2px 0px;
+	flex-basis: 400px;
+	display: flex;
+	flex-direction: row;
+	flex-wrap: wrap;
+	justify-content: flex-start;	    
+}
+/* individual stocks */
+.stock-sub{
+	flex: 1;
+	min-height: 100px;
+	background-color: #02144a;
+	margin: 10px;
+	border-radius: 3px;
+	max-width: 23%;
+	flex-basis: 23%;
+	border-color: white;
+	border-width: thin;
+	border-style: ridge
+}
+.stock-sub-symbol{
+	font-size: 2em;
+	color: #4dbb02;
+	margin: 10px 0 0 20px;
 }
 #bg-wrapper{
 	text-align: center;
@@ -339,8 +359,8 @@ span {
 
 #zipSearch{
 	text-align: center;
-	height: 50px;
-	margin: 2px;
+	height: 35px;
+	margin: 10px;
 	font-size: x-large;	
 	width: 90%;
 }
