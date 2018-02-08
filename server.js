@@ -15,8 +15,11 @@ var config = parse(process.env.DATABASE_URL);
 config.ssl = true;
 
 const Deepstream = require('deepstream.io')
-const server = new Deepstream();//'/app/config/config.yml')
+const server = new Deepstream('./app/config/config.yml'); //
 server.start();
+
+// var deepstreamC = require('deepstream.io-client-js');
+// const client = deepstreamC('ws://localhost:6020').login({username: "server"});
 
 var http = require('http');
 
@@ -39,6 +42,7 @@ app.use(session({
 	saveUninitialized: false
 }));
 
+
 // app.use(passport.initialize());
 // app.use(passport.session());
 
@@ -50,4 +54,3 @@ var port = process.env.PORT || 8082;
 http.createServer(app).listen(port, function () {
 	console.log('Node.js listening on port ' + port + '...');
 });
-

@@ -17,108 +17,242 @@
 			.then(() => {
 				return STREAMLIB.dsClient();
 			})
-			.then( (client) => {
-				//function for "initial records list"
-				if(client.getConnectionState() == "OPEN"){
-					let stocks = client.record.getList( "stocks" );
+			.then((client) => {
+				return new Promise((resolve, reject) => {
+					let stocks = client.record.getList("stocks");
 					stocks.whenReady((list) => {
+						if (list.isEmpty()) {
+							defaultStock(list)
+								.then(() => {
+									console.log("defStock  list resolved empty");
+									return existingList(list);
+								})
+								.then(() => {
+									console.log("existing list ONE resolved");
+									resolve(client);
+								})
+								.catch((e) => {
+									reject(client);
+								});
+						}
+						else {
+							existingList(list)
+								.then(() => {
+									console.log("existing list resolved");
+									resolve(client);
+								})
+								.catch((e) => {
+									reject(client);
+								});
+						}//else: (list has entries)						
+					});//when ready (list)					
+				});
+
+				function defaultStock(list) {
+					return new Promise((resolve, reject) => {
+						let defStock = "stock/MSFT";
+
+						//check if default stock already exists...					
+						client.record.has(defStock, (error, bool) => {
+							if (error) { reject(error); }
+							if (bool == true) {
+								client.record.getRecord(defStock).set({ "symbol": "MSFT" });
+								console.log("MSFT Default Stock Exists");
+								list.addEntry(defStock);
+								resolve();
+							}
+							else if (bool == false) {
+								//add stock to list records								
+								client.record.getRecord(defStock).set({ "symbol": "MSFT" });
+								client.event.emit("stocks/add", "MSFT");
+								list.addEntry(defStock);
+								resolve();
+							}//else							
+						});//has callback			
+					});//return promise
+				}//defaultStock	
+
+				//function for "initial records list"
+				function existingList(list) {
+					return new Promise((rex, rejex) => {
+						
 						//get the existing list of stock records...						
 						var elA = Array.from(list.getEntries());
 						//map the stocks and call "stock bulider" for each record
 						var elB = elA.map((eachEntry) => {
 							//Sync or Async?
-							return new Promise((resolve, reject) => {
+							return new Promise((resolveL, rejectL) => {
 								client.record.has(eachEntry, (error, hasRecord) => {
-									if(error){console.log("reJeckTed!"); reject(false); }
-									else{
+									if (error) { console.log("reJeckTed!"); rejectL(false); }
+									else {
 										var thisRecord = client.record.getRecord(eachEntry);
 										thisRecord.whenReady((rdy) => {
+											//subscribe to record
+											rdy.on("delete", () => {
+
+											});
 											let symback = rdy.get("symbol");
-											console.log(symback);
-											resolve(symback);
-										});	
+											console.log(rdy);
+											resolveL(symback);
+										});
 									}//else
 								});//has check
-							});							
-						});
-						Promise.all(elB)
+							});
+						}); //elB mapped
+						
+						/* Promise.all(elB)
 							.then((array) => {
-
 								let queenMaker = array.map((stockSym) => {
-
 									return new Promise((rezolve, rezect) => {
 										console.log("the stockSym is " + stockSym);
 										//all non-rejected elements
 										if (stockSym !== false) {
-											//add to DOM
-											STREAMLIB.dsAdd(stockSym);
 											//fetches stock data
 											STREAMLIB.fetchAlpha(stockSym)
-											.then((alpha) => {
-												//process the alpha into chart format...						
-												return STREAMLIB.formatAlpha(alpha);
-											})
-											.then((formed) => {
-												//insert into global document array
-												rezolve(STREAMLIB.add2Charts(formed));
-											});
-										}
-									});
+												.then((alphaResp) => {
+													var alpha1 = STREAMLIB.validateAlpha(alphaResp);
+													if (alpha1 == false) {
+														//invalid symbol
+														rezolve({});
+													} else {
+														return Promise.resolve(alpha1);
+													}
+												})
+												.then((alpha2) => {
+													// if (alpha !== "undefined" && alpha !== null) {														
+													//adds verified symbol to DOM		
+													console.log("ALPHA TRUE");
+													STREAMLIB.dsAdd(stockSym, alpha2)
+													return Promise.resolve(alpha2);
+												})
+												//process the alpha into chart format...
+												.then((alpha3) => {
+													return STREAMLIB.formatAlpha(alpha3);
+												})
+												.then((formatted) => {
+													console.log("FORMATTED");
+													//insert into global document array																
+													STREAMLIB.add2Charts(formatted);
+													rezolve();
+												})										
+												.catch((e) => {
+													console.log(e + " queenMaker");
+													//caught error
+												});
+										}//stockSym == true
+									});//return each promise
+								});// arraymap						 */
+							Promise.all(elB)
+							.then((array) => {
+								let queenMaker = array.map((stockSym) => {
+									return new Promise((rezolve, rezect) => {
+
+										console.log("the stockSym is " + stockSym);
+										//all non-rejected elements
+										if (stockSym !== false) {
+											//fetches stock data
+											STREAMLIB.fetchAlpha(stockSym)
+												.then((alphaResp) => {
+													return STREAMLIB.validateAlpha(alphaResp);
+												})
+												.then((alpha) => {
+													if (alpha !== "undefined" && alpha !== null) {
+																
+														//process the alpha into chart format...						
+														STREAMLIB.formatAlpha(alpha)
+															.then((formatted) => {
+																//insert into global document array
+																rezolve(STREAMLIB.add2Charts(formatted));
+																return Promise.resolve(formatted);
+															})
+															.then((formatted) => {
+																//adds verified symbol to DOM		
+																STREAMLIB.dsAdd(stockSym, formatted);	
+															});
+													}
+												},
+												(rejection) => {
+													rezolve();
+													console.log(rejection + "queenMaker Reject");
+												})
+												.catch((e) => {
+													console.log(e + " queenMaker");
+													//caught error
+												});
+										}//stockSym == true
+									});//return each promise
 								});
 
 								Promise.all(queenMaker)
-									.then((done) => {
+									.then(() => {
 										let stocksArray = STREAMLIB.getCharts();
 										STOCKSWATCH.drawFactory(stocksArray);
 										console.log("resolved all entries " + array.length);
+										rex(client);
 									})
 									.catch((e) => {
+										console.log("promise all qM");
 										console.log(e);
+										rejex(e);
 									});
-								//draw google chart
-								
-							});
-					});							
-				}
-				return Promise.resolve(client);
-
-			})			
+							});//elB resolved
+					});//existingList promise
+				}//existingList function								
+			})
 			.then((client) => {
+				
 				//subscribe to events
+				//add event
 				client.event.subscribe("stocks/add", (data) => {
-					//generate DOM 
-					//fetch alphavantage JSON: fetch(data)
-					//.then -> populate placeholders
-					//.then -> draw google chart
-
-					//adds stock to DOM
-					STREAMLIB.dsAdd(data);
-					//fetches stock data
+					//check if data format includes type format "stock/{name}"
+					if (data.includes("/", 5)){
+						data = data.split("/", 2)[1];
+					}
+					//fetch & validate stock data
 					STREAMLIB.fetchAlpha(data)
-					.then((alpha) => {
-						//process the alpha into chart format...						
-						return STREAMLIB.formatAlpha(alpha);						
-					})
-					.then((formed) => {
-						//insert into global document array
-						var stocksArray  =  STREAMLIB.add2Charts(formed);
-						//draw google chart
-						STOCKSWATCH.drawFactory(stocksArray);
-					});
-				});			
-				client.event.subscribe("stocks/remove", (data) => {
-					//access DOM
-					//.then -> remove chart node
-
-					//emit REMOVE entry...
-					STREAMLIB.dsRemove(data)
-					.then((removedSymb) => {
-						//remove the stock from the global array, then draw a new chart
-						let newArray = STREAMLIB.delFromCharts(removedSymb);
-						STOCKSWATCH.drawFactory(newArray);
-					});
+						.then((alphaResp) => {
+							return STREAMLIB.validateAlpha(alphaResp);
+						})
+						.then((validity) => {
+							//& process the alpha into chart format...						
+							STREAMLIB.formatAlpha(validity)
+								.then((formed) => {
+									//insert into global document array
+									var stocksArray = STREAMLIB.add2Charts(formed);
+									//draw google chart
+									STOCKSWATCH.drawFactory(stocksArray);
+									return Promise.resolve(formed);
+								})
+								.then((jsondata) => {
+									//adds verified symbol to DOM									
+									STREAMLIB.dsAdd(data, jsondata);
+								});						
+						}, (rejectFunction) => {
+							//TODO
+						})
+						.catch((e) => {
+							//invalid symbol?
+							console.log(e + "II");
+							//caught error
+						});
 				});
-				console.log("got to second level " + " " + client.getUid());
+				//remove event
+				client.event.subscribe("stocks/remove", (data) => {
+					STREAMLIB.dsRemove(data)
+						.then((removedSymb) => {
+							//remove the stock from the global array, then draw a new chart
+							let newArray = STREAMLIB.delFromCharts(removedSymb);
+							STOCKSWATCH.drawFactory(newArray);
+							//remove the record from the list							
+							client.record.getList("stocks").removeEntry("stock/" + data);
+						})
+						.catch((e) => {
+							console.log(e);
+						});
+				});				
+			})
+			.catch((e) => {
+				console.log(e);
 			});
 	</script>
 
@@ -128,23 +262,12 @@
 
 <body>
 	<div id="navi" class="navi-menu">
-		<!-- <div id="api-icon"></div>
-		<div id="home-icon"></div>
-		<div class="container" id="welcome-container">
-			<p>Welcome to Nightlife Coordination App 2night<span id="display-name"></span>!</p>
-			
-			<span id="auth-container"></span>					
-			<br>
-			
-			<div class="fb-login-button" data-max-rows="1" data-size="large" data-button-type="continue_with" data-show-faces="false" data-auto-logout-link="true" data-use-continue-as="false">
-			</div>
-			<div id="status"></div>		
-		</div> -->
 	</div>
 
 	<div id="clock">
 		<h3 id="clock-time">
-			Welcome! To <i>Stocks Watch</i>!
+			Welcome! To
+			<i>Stocks Watch</i>!
 		</h3>
 	</div>
 
@@ -152,19 +275,19 @@
 	<div id="stocks-super">
 		<div id="bg-wrapper">
 			<div id="bg-top" class="bg-img"></div>
-			<div id = "chart-super">
-				[CHART SUPER]
+			<div id="chart-super">
+				Now Loading
 			</div>
 			<div id="bg-bot" class="bg-img"></div>
 		</div>
 		<ul id="stocks-view" class="stocks-view-list"></ul>
 	</div>
-	
+
 	<div class="container center-bar">
-			<img id="zip-image" src="public/img/enterstocksymbol.png" alt="enter your zip:"/>
-			<input type="text" id="zipSearch" name="q" placeholder="Stock symbol"/>						
-		</div>
-	
+		<img id="zip-image" src="public/img/enterstocksymbol.png" alt="enter your zip:" />
+		<input type="text" id="zipSearch" name="q" placeholder="Stock symbol" />
+	</div>
+
 
 	<div id="events-sup">
 		<div id="loading" lock="on">
@@ -173,25 +296,12 @@
 			</div>
 		</div>
 
-		<!--Div that will hold the polls-->
-		<!-- 		<div id="pollDb">
-			<img id="yourarea" src="public/img/yourarea.png" alt="Results" />
-			<ul id="poll-view" class="poll-view-list"></ul>
-		</div>
-
-		<div id="profile-container" style="display: none">
-			<div id="profile-navi">
-				<img id="fresh-appts" src="public/img/refresh.png" alt="Reload my Appointments" />
-			</div>
-			<ul id="appts-view"></ul>
-		</div> -->
-
 	</div>
 </body>
 
 <footer>
 	<script>
-		STREAMLIB.asyncSetup();
+		STREAMLIB.asyncSetup(STREAMLIB.fetchAlpha, STREAMLIB.validateAlpha);
 	</script>
 </footer>
 

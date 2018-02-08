@@ -1,19 +1,5 @@
 /********* Fonts **********/
 
-/* @font-face {
-  font-family: 'Roboto';
-  font-style: normal;
-  font-weight: 400;
-  src: local('Roboto'), local('Roboto-Regular'), url('../fonts/Roboto-Regular.ttf') format('truetype');
-}
-
-@font-face {
-  font-family: 'Roboto';
-  font-style: normal;
-  font-weight: 500;
-  src: local('Roboto Medium'), local('Roboto-Medium'), url('../fonts/Roboto-Medium.ttf') format('truetype');
-} */
-
 /****** Main Styling ******/
 
 body {
@@ -27,9 +13,6 @@ body {
 
 header {
 	color: #00BCD4;
-	/* height: 56px;
-	margin: 14px 0 14px 0;
-	text-align: center; */
 }
 
 p {
@@ -118,8 +101,10 @@ header a ~ p {
 	justify-content: flex-start;	    
 }
 /* individual stocks */
-.stock-sub{
+.stock-sub-wrap{
 	flex: 1;
+	display: flex;
+	flex-direction: row;
 	min-height: 100px;
 	background-color: #02144a;
 	margin: 10px;
@@ -127,14 +112,16 @@ header a ~ p {
 	max-width: 23%;
 	flex-basis: 23%;
 	border-color: white;
-	border-width: thin;
+	border-width: medium;
 	border-style: ridge
 }
+
 .stock-sub-symbol{
 	font-size: 2em;
 	color: #4dbb02;
 	margin: 10px 0 0 20px;
 }
+
 #bg-wrapper{
 	text-align: center;
 	background-color: #02144a;
@@ -302,58 +289,6 @@ img {
 }
 
 /****** Profile Styling ******/
-
-.github-profile {
-	/*width: 350px;*/
-	width: 100%;
-	height: 100%;
-	border-radius: 3px;
-/*	margin: 86px auto 0 auto;*/
-	padding: 10px;
-	background-color: #e6e6e6;
-	text-align: center;
-	color: #000;
-}
-
-.github-profile p:first-child {
-	padding-top: 16px;
-}
-
-.github-profile p:nth-child(10) {
-	margin-bottom: 16px
-}
-
-.github-profile p {
-	margin: 0 0 0 16px;
-	text-align: left;
-}
-
-.profile-value {
-	font-weight: 400;
-}
-
-span {
-	font-weight: 500;
-}
-
-.github-profile > img {
-	padding-top: 16px;
-	margin-bottom: 16px;
-}
-
-.github-profile .menu:hover {
-	color: #FFA000;
-}
-
-.github-profile .menu:active {
-	color: #FF630D;
-}
-
-#menu-divide {
-	color: #FFFFFF;
-	display: inline;
-	margin: 0;
-}
 
 /******* search bar **********/
 

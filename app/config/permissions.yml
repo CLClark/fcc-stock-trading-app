@@ -1,6 +1,43 @@
+presence:
+  "*":
+    allow: false
+
 record:
-  stock/*:
-    write: ""
-    delete: "data !== MSFT"
+  "*":
+    create: false
+    write: false
+    read: false
+    delete: false
+    listen: false
+  stock/$ticker:    
+    create: ' $ticker == $ticker.toUpperCase() '
+    #  && $ticker.match(/^\S{0,20}$/) == true
+    write: true
+    read: true
+    delete: " $ticker !== 'MSFT' "
+  stocks:
+    create: true
+    write: true
+    read: true
+    delete: false
 
 event:
+  "*":
+    publish: false
+    subscribe: false
+    listen: false
+  stocks/remove:
+    publish: " data !== 'MSFT' && data !== 'stock/MSFT' "
+    subscribe: true
+    listen: true
+  stocks/add:
+    publish: " data !== 'MSFT' && data !== 'stock/MSFT' "
+    subscribe: true
+    listen: true
+
+rpc:
+  "*":
+    provide: false
+    request: false
+
+

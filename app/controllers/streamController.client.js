@@ -1,15 +1,12 @@
 'use strict';
 
 var STREAMLIB = STREAMLIB || (function () {
-	// var divCB;
-	var extScript; //deepstream.js
-	var ourKey = "RFYNJQR3B41RMNYG";
+
+	var extScript;
+	var ourKey = "demo";
 	var dsClient;
-	var apiKey;
-	// var authScriptCB;
-	// var apiAuth = appUrl + '/auth/check';
-	// var defSearch = null;
-	// var loader;
+	var apiKey;	
+	var apiAuth = appUrl + '/stock/';	
 	var _args = {}; // private
 	var charts = [];
 
@@ -136,8 +133,7 @@ var STREAMLIB = STREAMLIB || (function () {
 						if(data){
 							console.log(data);
 						}						
-						resolve(client);
-						defaultStock();
+						resolve(client);						
 						console.log("login success");
 						
 						// data will be an object with {id: 'user-id'} plus
@@ -155,41 +151,21 @@ var STREAMLIB = STREAMLIB || (function () {
 						// 'AWAITING_AUTHENTICATION' or 'CLOSED'
 						// if the maximum number of authentication
 						// attempts has been exceeded.
-					}
-					function defaultStock(){
-						if (dsClient.getConnectionState() == "OPEN") {
-							//check if stock already exists...
-							dsClient.record.has("stock/MSFT", (error, bool) => {
-								if (bool == true) {
-									console.log("MSFT Default Stock");
-								}
-								else {		
-									//emit add event
-									console.log("client open; telling node server");
-									dsClient.event.emit("stocks/add", "MSFT");
-		
-									//add stock to list records
-									var id = "stock/MSFT"; //dsClient.getUid();
-									dsClient.record.getRecord(id).set("symbol", "MSFT");
-									let stocks = dsClient.record.getList("stocks");
-									stocks.whenReady((list) => {
-										list.addEntry(id);
-									});
-								}//else
-							});//has callback		
-						}
-					}//defaultStock								
-				});				
+					}						
+				});
 				// client.getConnectionState() will now return 'AUTHENTICATING'
 			});
 		},
 
 		//callback for "stock/add" event
-		dsAdd: function (data){
-			console.log("dsAdd: " + data);
+		dsAdd: function (data, rawJson){			
 			return new Promise(function (resolve, reject) {
-
+				console.log("dsAdd: " + data + " " + rawJson);
 				function entryMaker(){
+					let stockSubWrap = document.createElement("div");
+					stockSubWrap.className = "stock-sub-wrap"
+					stockSubWrap.id = ("wrap-" + data);
+ 				
 					let stockSub = document.createElement("div");
 					stockSub.className = "stock-sub";
 					stockSub.id = data;
@@ -199,14 +175,33 @@ var STREAMLIB = STREAMLIB || (function () {
 					symbol.innerHTML = data;
 					stockSub.appendChild(symbol);
 					stockSub.appendChild(xMaker());
-					return stockSub;				
+
+					stockSubWrap.appendChild(stockSub);
+					
+					let stockDat = document.createElement("div");
+					// let rawJson = null;
+					if(rawJson !== "undefined" && rawJson !== null){						
+						stockDat.className = "stock-sub-dat";
+						stockDat.id = ("stock-dat-" + data);
+						console.log(rawJson);
+						let meta = rawJson["series"];
+						let sDatUL = document.createElement("ul");
+						// let recent = Object.keys(meta[0])[0];
+						let item1 = meta[0]["date"];
+						sDatUL.innerHTML = item1 || "stock data";
+						stockDat.appendChild(sDatUL);
+						stockSubWrap.appendChild(stockDat);		
+					}		
+					return stockSubWrap;				
 				}
+
+				//the DOM button to remove the stock
 				function xMaker(){
 					let xButton = document.createElement("button");
 					xButton.setAttribute("symbol", data);
 					xButton.className = "btn";
 					xButton.addEventListener("click", function(arg){
-						let which = this.getAttribute("symbol");
+						var which = this.getAttribute("symbol");
 						let superNode = document.querySelector("#"+ data);
 						superNode.setAttribute("display","none");
 						deleter(which);
@@ -217,20 +212,24 @@ var STREAMLIB = STREAMLIB || (function () {
 
 				//tells node to delete this chart
 				function deleter(searchValue){
+					let recordName = "stock/" + searchValue;
 					if (dsClient.getConnectionState() == "OPEN") {
 						//check if stock already gone...
-						dsClient.record.has("stock/" + searchValue, (error, bool) => {
+						dsClient.record.has(recordName, (error, bool) => {
 							if (bool == false) {
-								console.log("already gone!");
+								console.log(error + ": stock not found!");
 							}
-							else {
-								//TODO: check if the symbol is valid, before emitting	
-								//emit add event
-								console.log("client open; telling node server");
-								dsClient.event.emit("stocks/remove", searchValue);
-	
-								//draw a new chart
-								//remove the symbol from the global stock array
+							else{
+								let stocks = dsClient.record.getList( "stocks" );
+								stocks.whenReady((list) => {									
+									list.removeEntry( searchValue );
+									//TODO: check if the symbol is valid, before emitting									
+									console.log("telling node server");																											
+									//delete the record
+									let rec = dsClient.record.getRecord(recordName);
+									rec.delete();
+									dsClient.event.emit("stocks/remove", searchValue);		
+								});	
 							}//else
 						});//has callback					
 					}//open client
@@ -238,10 +237,8 @@ var STREAMLIB = STREAMLIB || (function () {
 
 				//add to list
 				let stocksView = document.querySelector("#stocks-view");					
-				stocksView.appendChild(entryMaker());
-				
-
-				resolve();
+				stocksView.appendChild(entryMaker());				
+				resolve({});
 			});//promise
 		},
 
@@ -269,26 +266,47 @@ var STREAMLIB = STREAMLIB || (function () {
 			});//promise
 		},
 
-		//make a call to alphavantage, returns JSON data
-		fetchAlpha: function (stockSym){
+		//make a call to node server for alphavantage, returns JSON data
+		fetchAlpha: function (stockSym) {
 			console.log("fetchAlpha");
 			return new Promise(function (resolve, reject) {
-				//TODO replace key 
-				// let ourKey = apiKey
-				if(stockSym == null || stockSym == "undefined"){ stockSym = "MSFT"}
-				let alpha = "https://www.alphavantage.co/query?function=TIME_SERIES_DAILY&symbol=" + stockSym + "&apikey=" + ourKey;
-				ajaxFunctions.ready(ajaxFunctions.ajaxRequestLim("GET", alpha, 5000, (err, res, status) => {
-					if(err){
+				if (stockSym == null || stockSym == "undefined") { stockSym = "MSFT" }
+				let getPath  = "/stock/" + stockSym;
+				ajaxFunctions.ready(ajaxFunctions.ajaxRequestLim("GET", getPath, 8000, (err, res, status) => {
+					let resObj = JSON.parse(res);
+					// console.log(res);
+					if (err) {
 						console.log("alphavantage: timeout or error : " + err);
 						reject({});
 					}
-					resolve(JSON.parse(res));					
+					else {
+						resolve(JSON.parse(res));
+					}
+				}));
+			});//promise
+		},
+
+		//make a call directly to alphavantage api, returns JSON data
+		fetchAlphaDirect: function (stockSym) {
+			console.log("fetchAlpha2");
+			return new Promise(function (resolve, reject) {
+				if (stockSym == null || stockSym == "undefined") { stockSym = "MSFT" }
+				let alphaApi = "https://www.alphavantage.co/query?function=TIME_SERIES_DAILY&symbol=" + stockSym + "&apikey=" + ourKey;
+				ajaxFunctions.ready(ajaxFunctions.ajaxRequestLim("GET", alphaApi, 8000, (err, res, status) => {
+					let resObj = JSON.parse(res);
+					if (err) {
+						console.log("alphavantage: timeout or error : " + err);
+						reject({});
+					}
+					else {
+						resolve(JSON.parse(res));
+					}
 				}));
 			});//promise
 		},
 		//accepts alpha object, inserts into global array (for chart drawing)
-		formatAlpha: function (fetched){
-			return new Promise((resolve, reject) => {
+		formatAlpha: function (fetched){			
+			return new Promise((resolve, reject) => {				
 				var form = {};
 				let dates = fetched["Time Series (Daily)"];
 				let meta = fetched["Meta Data"];
@@ -320,6 +338,29 @@ var STREAMLIB = STREAMLIB || (function () {
 			});//prom
 		},//formatAlpha
 
+		//validates the alpha api response
+		validateAlpha: function (alphaRes) {
+			return new Promise((resolve, reject) => {
+				//validate the ticker symbol, based on alphavantage response
+				let verifiedSym = alphaRes["Meta Data"]["2. Symbol"];
+				if (verifiedSym == null || verifiedSym == "undefined") {
+					let searchBar = document.querySelector("#zipSearch");
+					searchBar.value = "";
+					console.log("symbol not validated");
+					reject(false);
+				}
+				else if (alphaRes.hasOwnProperty("Error Message")) {
+					console.log("Error Message: true");
+					reject(false);
+				}
+				else {
+					console.log("symbol verified");
+					//returns api response
+					resolve(alphaRes);
+				}	
+			});
+		},		
+
 		//add a chart to the global array
 		add2Charts: function(formedRow){
 			charts.push(formedRow);
@@ -337,8 +378,9 @@ var STREAMLIB = STREAMLIB || (function () {
 			return charts;
 		},
 
-		asyncSetup: function(){
-						
+		asyncSetup: function(fetcher, validator){
+			//fetcher calls alphavantage api, passing in symbol
+			//validator receives json and performs the check
 		      
 			document.querySelector('input#zipSearch').addEventListener("keypress", function (e) {
 				var i = document.querySelector('#zipSearch').value;
@@ -347,63 +389,60 @@ var STREAMLIB = STREAMLIB || (function () {
 				if (key === 13) { // 13 is enter
 					// code for enter
 					console.log("fired input: " + i);
-					// var reg = new RegExp('\\b\\$[a-z]+\\b','gi');				
-					// if (reg.test(i)) {					
-					// Dispatch the event.
-					// document.querySelector('#poll-view').dispatchEvent(adder);
-					tellNode(i.toUpperCase());
-					// }
-				}
-				// 	// let tDay = new Date();
-				// 	// let timeFrame = new Date(tDay.getFullYear(), tDay.getMonth(), tDay.getDate())
-				// 	// if (tDay.getHours() >= 20) {
-				// 	// 	timeFrame.setDate(timeFrame.getDate() + 1);
-				// 	// }
-				// 	var request = ('/stocks/?sym=' + searchValue);// + "&timeframe=" + timeFrame.toISOString());
-				// 	ajaxFunctions.ready(ajaxFunctions.ajaxRequestLim('GET', request, 7000, function (err, data, status) {
-				// 		if(err){ console.log(err)}
-				// 		else{
-				// 			var barsFound = JSON.parse(data);
-				// 			console.log(barsFound);							
-				// 			//TODO
-				// 			/* document.querySelector('#poll-view').innerHTML = "";							
-				// 			functionCB(barsFound, 'poll-view', null, null);
-				// 			passedInFunction();
-				// 			 */
-				// 			//barFormer callback
-				// 			//					formerCB();
-				// 		}//else						
-				// 	}));//ajax request
-				
+
+					let userInput = i.toUpperCase();
+
+					fetcher(userInput)
+					.then((symBack) => {
+						return validator(symBack);
+					})
+					.then(
+						(alphaJSON) => {
+						let symbol = alphaJSON["Meta Data"]["2. Symbol"];
+						tellNode(symbol);
+					},
+						(rejected) => {
+						console.log("symbol rejected");	
+					})
+					.catch((e) => {
+						console.log(e);
+					});					
+				}				
 			});
 
-			function tellNode(searchValue) {
+			function tellNode(tickerInput) {
 				if (dsClient.getConnectionState() == "OPEN") {
 					//check if stock already exists...
-					dsClient.record.has("stock/" + searchValue, (error, bool) => {
-						if (bool == true) {
-							console.log("already in the list!");
-						}
-						else {
-							//TODO: check if the symbol is valid, before emitting
+					let searchValue = "stock/" + tickerInput;
+					dsClient.record.has(searchValue, (error, bool) => {
+						let stocks = dsClient.record.getList("stocks");
+						stocks.whenReady((list) => {
+							// console.log(list);
+							//exists as record, and exists in list?
+							let listFrom = Array.from(list.getEntries());
+							console.log(listFrom);
+							let listBool = listFrom.includes(searchValue);
+							if (bool == true && listBool == true) {
+								throw "already a record! and in list!";
+							}
+							else {
+								//emit add event
+								console.log("client open; telling node server");
+								//add stock to list records								
+								dsClient.record.getRecord(searchValue).set("symbol", tickerInput);
+								stocks.whenReady((list) => {
+									list.addEntry(searchValue);
+									dsClient.event.emit("stocks/add", searchValue);
+								});
+							}//else
+						})//list ready		
 
-							//emit add event
-							console.log("client open; telling node server");
-							dsClient.event.emit("stocks/add", searchValue);
-
-							//add stock to list records
-							var id = "stock/" + searchValue; //dsClient.getUid();
-							dsClient.record.getRecord(id).set("symbol", searchValue);
-							let stocks = dsClient.record.getList("stocks");
-							stocks.whenReady((list) => {
-								list.addEntry(id);
-							});
-						}//else
-					});//has callback					
+					});//has callback	
 				}//open client
 			}//tellnode
 		},
 
+		//ds list removal
 		removeStock: function (stock){
 			//handle "remove" buttons
 			let stocks = dsClient.record.getList( "stocks" );
