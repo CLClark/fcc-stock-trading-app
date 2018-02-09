@@ -102,24 +102,38 @@ header a ~ p {
 }
 /* individual stocks */
 .stock-sub-wrap{
-	flex: 1;
+	/* flex: 1; */
 	display: flex;
 	flex-direction: row;
 	min-height: 100px;
 	background-color: #02144a;
 	margin: 10px;
 	border-radius: 3px;
-	max-width: 23%;
+	/* max-width: 23%; */
 	flex-basis: 23%;
 	border-color: white;
 	border-width: medium;
 	border-style: ridge
 }
 
+.stock-sub{
+	flex: 1;
+}
+
 .stock-sub-symbol{
-	font-size: 2em;
+	font-size: x-large;
 	color: #4dbb02;
 	margin: 10px 0 0 20px;
+}
+
+ .stock-sub-dat ul{
+	list-style: none;
+	padding: 0;
+	white-space: nowrap;
+	margin: 10px 10px 0 2px;
+}
+.stock-sub-dat ul li{
+	white-space: nowrap;
 }
 
 #bg-wrapper{

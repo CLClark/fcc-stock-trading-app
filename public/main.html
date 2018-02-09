@@ -243,7 +243,8 @@
 							//remove the stock from the global array, then draw a new chart
 							let newArray = STREAMLIB.delFromCharts(removedSymb);
 							STOCKSWATCH.drawFactory(newArray);
-							//remove the record from the list							
+							//remove the record from the list
+							console.log(data);
 							client.record.getList("stocks").removeEntry("stock/" + data);
 						})
 						.catch((e) => {

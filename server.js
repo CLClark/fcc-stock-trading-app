@@ -1,8 +1,8 @@
 'use strict';
 
-// if(process.env.LOCAL !== true){
-	require('dotenv').load();
-// }
+if(process.env.LOCAL !== true){
+	// require('dotenv').load();
+}
 var express = require('express');
 var routes = require('./app/routes/index.js');
 var pg = require('pg');

@@ -177,20 +177,22 @@ var STREAMLIB = STREAMLIB || (function () {
 					stockSub.appendChild(xMaker());
 
 					stockSubWrap.appendChild(stockSub);
-					
-					let stockDat = document.createElement("div");
-					// let rawJson = null;
-					if(rawJson !== "undefined" && rawJson !== null){						
+
+					if (rawJson !== "undefined" && rawJson !== null) {
+						let stockDat = document.createElement("div");
 						stockDat.className = "stock-sub-dat";
 						stockDat.id = ("stock-dat-" + data);
 						console.log(rawJson);
 						let meta = rawJson["series"];
 						let sDatUL = document.createElement("ul");
-						// let recent = Object.keys(meta[0])[0];
-						let item1 = meta[0]["date"];
-						sDatUL.innerHTML = item1 || "stock data";
+						let dateTag = document.createElement("li");						
+						dateTag.innerText = (("DATE: ") + meta[0]["date"]);
+						sDatUL.appendChild(dateTag);
+						let closeV = document.createElement("li");						
+						closeV.innerText = ("CLOSE: " + meta[0]["close"]);
+						sDatUL.appendChild(closeV);
 						stockDat.appendChild(sDatUL);
-						stockSubWrap.appendChild(stockDat);		
+						stockSubWrap.appendChild(stockDat);
 					}		
 					return stockSubWrap;				
 				}
@@ -247,14 +249,14 @@ var STREAMLIB = STREAMLIB || (function () {
 			console.log("dsRemove: " + stockSym);
 			//resolves to a string message
 			return new Promise(function (resolve, reject) {
-				let toRemove = document.querySelector("#" + stockSym);
+				let toRemove = document.querySelector("#wrap-" + stockSym);
 				if (toRemove == null || toRemove == "undefined") {
 					reject("dsRemove: stock node not found");
 				}
 				else {
 					let parentNode = toRemove.parentNode;
 					parentNode.removeChild(toRemove);
-					if (document.querySelector("#" + stockSym) == null || document.querySelector("#" + stockSym) == "undefined") {
+					if (document.querySelector("#wrap-" + stockSym) == null || document.querySelector("#wrap-" + stockSym) == "undefined") {
 						//remove from global array
 						charts = charts.filter(stck => stck.symbol !== stockSym.toUpperCase());
 						resolve(stockSym);
@@ -272,7 +274,7 @@ var STREAMLIB = STREAMLIB || (function () {
 			return new Promise(function (resolve, reject) {
 				if (stockSym == null || stockSym == "undefined") { stockSym = "MSFT" }
 				let getPath  = "/stock/" + stockSym;
-				ajaxFunctions.ready(ajaxFunctions.ajaxRequestLim("GET", getPath, 8000, (err, res, status) => {
+				ajaxFunctions.ready(ajaxFunctions.ajaxRequestLim("GET", getPath, 10000, (err, res, status) => {
 					let resObj = JSON.parse(res);
 					// console.log(res);
 					if (err) {

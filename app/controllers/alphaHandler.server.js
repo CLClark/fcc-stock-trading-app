@@ -34,11 +34,11 @@ function AlphaHandler() {
 			method: 'GET',
 			headers: {
 				'user-agent': 'clclarkFCCStocks/1.0',
-				'Accept-Language': 'en-US',			
-				'Connection': 'keep-alive'
+				'Accept-Language': 'en-US'			
+				// 'Connection': 'keep-alive'
 			},
 			agent: false,
-			timeout: 8000
+			timeout: 10000
 		};
 
 		// options.agent = new https.Agent(options);
