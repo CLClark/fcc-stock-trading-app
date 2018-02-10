@@ -13,9 +13,10 @@ http {
     upstream websocket {
       server localhost:6020;
     }
-#     upstream httpendpoint {
-#       server localhost:8080;
-#     }
+
+    upstream app_server {
+		server unix:/tmp/nginx.socket fail_timeout=0;
+ 	}
 
     server {
         listen <%= ENV["PORT"] %>;        
@@ -28,12 +29,15 @@ http {
                 proxy_set_header Connection '$connection_upgrade;
                 rewrite ^/deepstream(.*) $1 break;
         }
+        # root   /app/build;
+        location / {
+			proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+			proxy_set_header Host $http_host;
+			proxy_redirect off;
+			proxy_pass http://app_server;
+			# proxy_pass app_server;
+		}
 
-    #   Deepstream http endpoint
-    #   location /http {
-    #        proxy_pass http://httpendpoint;
-    #        proxy_http_version 1.1;
-    #        rewrite ^/http(.*) $1 break;
-    #   }
+    
    }
 }
