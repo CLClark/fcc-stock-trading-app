@@ -76,9 +76,7 @@ ds.start();
 let port = '/tmp/app.socket';
 server.listen(port, function () {
 	console.log('Node.js listening on port ' + port + '...');
-	fs.writeFile("/tmp/app-initialized", "", () => {
-		console.log("wrote file tmp/app-initialized");
-	});
+	fs.closeSync(fs.openSync('/tmp/app-initialized', 'w'));	
 });
 
 
