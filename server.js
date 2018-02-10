@@ -16,6 +16,7 @@ var pg = require('pg');
 var session = require('express-session');
 var pgSession = require('connect-pg-simple')(session);
 var parse = require('pg-connection-string').parse;
+const fs = require('fs');
 // var passport = require('passport');
 
 //postgresql config
@@ -75,5 +76,7 @@ ds.start();
 
 server.listen(port, function () {
 	console.log('Node.js listening on port ' + port + '...');
-	FileUtils.touch("/tmp/app-initialized");
+	fs.writeFile("/tmp/app-initialized", "", () => {
+		console.log("wrote file tmp/app-initialized");
+	});
 });
