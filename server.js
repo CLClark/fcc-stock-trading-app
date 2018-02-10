@@ -72,7 +72,7 @@ const ds = new Deepstream(dsConfig);
 
 ds.start();
 
-let port = '/tmp/app.socket';
+let port = '/tmp/nginx.socket';
 // let port = 8080;
 server.listen(port, function () {
 	console.log('Node.js listening on port ' + port + '...');
