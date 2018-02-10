@@ -1,6 +1,6 @@
 'use strict';
 // if (process.env.LOCAL == true) {
-	require('dotenv').load();
+	// require('dotenv').load();
 // }
 var queue = require('queue')
 

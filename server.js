@@ -55,8 +55,8 @@ routes(app);
 const server = http.createServer(app);
 
 
-var WebSocketServer = require('uws').Server;
-var wss = new WebSocketServer({ server });
+// var WebSocketServer = require('uws').Server;
+// var wss = new WebSocketServer({ server });
 
 // function onMessage(message) {
 //     console.log('received: ' + message);
