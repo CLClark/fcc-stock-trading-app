@@ -50,7 +50,7 @@ connectionEndpoints:
       # port for the http server
       port: ${PORT}
       # host for the http server
-      host: fcc-stock-tracking-app.herokuapp.com
+      host: localhost
       # allow 'authData' parameter in POST requests, if disabled only token and OPEN auth is
       # possible
       allowAuthData: true
