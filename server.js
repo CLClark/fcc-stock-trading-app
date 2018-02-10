@@ -1,8 +1,13 @@
 'use strict';
 
-if(process.env.LOCAL !== true){
-	// require('dotenv').load();
+var dsConfig;
+if(process.env.LOCAL !== false){
+	require('dotenv').load();
+	dsConfig = "./app/config/config-local.yml";	
+} else {
+	dsConfig = "./app/config/config.yml";
 }
+
 var express = require('express');
 var routes = require('./app/routes/index.js');
 var pg = require('pg');
@@ -15,7 +20,7 @@ var config = parse(process.env.DATABASE_URL);
 config.ssl = true;
 
 const Deepstream = require('deepstream.io')
-const server = new Deepstream('./app/config/config.yml'); //
+const server = new Deepstream(dsConfig);
 server.start();
 
 // var deepstreamC = require('deepstream.io-client-js');
@@ -41,7 +46,6 @@ app.use(session({
 	cookie: { maxAge: 2 * 24 * 60 * 60 * 1000 }, // 2 days
 	saveUninitialized: false
 }));
-
 
 // app.use(passport.initialize());
 // app.use(passport.session());
