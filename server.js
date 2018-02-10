@@ -55,7 +55,7 @@ hServer.listen(port, function () {
 });
 
 const Deepstream = require('deepstream.io')
-const server = new Deepstream(dsConfig);
+const server = new Deepstream(	{ hServer }	);
 server.start();
 
 // var deepstreamC = require('deepstream.io-client-js');
