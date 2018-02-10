@@ -1,11 +1,11 @@
 'use strict';
 
 var dsConfig;
-if(process.env.LOCAL !== false){
+if(process.env.LOCAL == false){
+	dsConfig = "./app/config/config.yml";
+} else {
 	require('dotenv').load();
 	dsConfig = "./app/config/config-local.yml";	
-} else {
-	dsConfig = "./app/config/config.yml";
 }
 
 var express = require('express');
