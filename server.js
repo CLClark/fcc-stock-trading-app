@@ -1,12 +1,12 @@
 'use strict';
 
 var dsConfig;
-if(process.env.LOCAL == false){
+// if(process.env.LOCAL == false){
 	dsConfig = "./app/config/config.yml";
-} else {
-	require('dotenv').load();
-	dsConfig = "./app/config/config-local.yml";	
-}
+// } else {
+	// require('dotenv').load();
+	// dsConfig = "./app/config/config-local.yml";	
+// }
 
 var express = require('express');
 var routes = require('./app/routes/index.js');
