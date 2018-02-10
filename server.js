@@ -16,11 +16,6 @@ dsConfig = "./app/config/config-local.yml";
 var port;
 if(process.env.LOCAL == false){	
 
-	fs.readFile("/tmp/nginx", 'utf8', function (err, data){
-		let nsock = JSON.parse(data);
-		port = nsock.socket;
-		console.log(nsock);
-	});
 	dsConfig = "./app/config/config.yml";
 } 
 
@@ -80,9 +75,17 @@ const ds = new Deepstream(dsConfig);
 
 ds.start();
 
-server.listen(port, function () {
-	console.log('Node.js listening on port ' + port + '...');
-	fs.writeFile("/tmp/app-initialized", "", () => {
-		console.log("wrote file tmp/app-initialized");
+fs.readFile("/tmp/nginx", 'utf8', function (err, data){
+	let nsock = JSON.parse(data);
+	port = nsock.socket;
+	console.log(nsock);
+	
+	server.listen(port, function () {
+		console.log('Node.js listening on port ' + port + '...');
+		fs.writeFile("/tmp/app-initialized", "", () => {
+			console.log("wrote file tmp/app-initialized");
+		});
 	});
 });
+
+
