@@ -18,7 +18,7 @@ sslCa: null
 # Connection Endpoint Configuration
 # to disable, replace configuration with null eg. `http: null`
 connectionEndpoints:
-  websocket: null
+  websocket: 
     name: uws
     options:
         # port for the websocket server
