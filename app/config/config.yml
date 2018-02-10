@@ -18,53 +18,53 @@ sslCa: null
 # Connection Endpoint Configuration
 # to disable, replace configuration with null eg. `http: null`
 connectionEndpoints:
-  websocket: 
-    name: uws
-    options:
-        # port for the websocket server
-        port: ${PORT}
-        # host for the websocket server
-        host: fcc-stock-tracking-app.herokuapp.com
-        # url path websocket connections connect to
-        urlPath: /deepstream
-        # url path for http health-checks, GET requests to this path will return 200 if deepstream is alive
-        healthCheckPath: /health-check
-        # the amount of milliseconds between each ping/heartbeat message
-        heartbeatInterval: 30000
-        # the amount of milliseconds that writes to sockets are buffered
-        outgoingBufferTimeout: 0
-
-        # Security
-        # amount of time a connection can remain open while not being logged in
-        unauthenticatedClientTimeout: 180000
-        # # invalid login attempts before the connection is cut
-        # maxAuthAttempts: 3
-        # # if true, the logs will contain the cleartext username / password of invalid login attempts
-        # logInvalidAuthData: false
-        # maximum allowed size of an individual message in bytes
-        maxMessageSize: 1048576
-
-  http: null
-    # name: http
+  websocket: null
+    # name: uws
     # options:
+    #     # port for the websocket server
+    #     port: ${PORT}
+    #     # host for the websocket server
+    #     host: fcc-stock-tracking-app.herokuapp.com
+    #     # url path websocket connections connect to
+    #     urlPath: /deepstream
+    #     # url path for http health-checks, GET requests to this path will return 200 if deepstream is alive
+    #     healthCheckPath: /health-check
+    #     # the amount of milliseconds between each ping/heartbeat message
+    #     heartbeatInterval: 30000
+    #     # the amount of milliseconds that writes to sockets are buffered
+    #     outgoingBufferTimeout: 0
+
+    #     # Security
+    #     # amount of time a connection can remain open while not being logged in
+    #     unauthenticatedClientTimeout: 180000
+    #     # # invalid login attempts before the connection is cut
+    #     # maxAuthAttempts: 3
+    #     # # if true, the logs will contain the cleartext username / password of invalid login attempts
+    #     # logInvalidAuthData: false
+    #     # maximum allowed size of an individual message in bytes
+    #     maxMessageSize: 1048576
+
+  http:
+    name: http
+    options:
       # port for the http server
-      # port: 8082
+      port: ${PORT}
       # host for the http server
-      # host: localhost
-  #     # allow 'authData' parameter in POST requests, if disabled only token and OPEN auth is
-  #     # possible
-  #     allowAuthData: true
-  #     # enable the authentication endpoint for requesting tokens/userData.
-  #     # note: a custom authentication handler is required for token generation
-  #     enableAuthEndpoint: false
-  #     # path for authentication requests
-  #     authPath: /auth
+      host: fcc-stock-tracking-app.herokuapp.com
+      # allow 'authData' parameter in POST requests, if disabled only token and OPEN auth is
+      # possible
+      allowAuthData: true
+      # enable the authentication endpoint for requesting tokens/userData.
+      # note: a custom authentication handler is required for token generation
+      enableAuthEndpoint: false
+      # path for authentication requests
+      authPath: /auth
       # path for POST requests
-      # postPath: /
+      postPath: /
       # path for GET requests
-      # getPath: /
+      getPath: /
       # url path for http health-checks, GET requests to this path will return 200 if deepstream is alive
-      # healthCheckPath: /health-check
+      healthCheckPath: /health-check
 
       # -- CORS --
       # if disabled, only requests with an 'Origin' header matching one specified under 'origins'
