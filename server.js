@@ -20,13 +20,6 @@ var parse = require('pg-connection-string').parse;
 var config = parse(process.env.DATABASE_URL);
 config.ssl = true;
 
-const Deepstream = require('deepstream.io')
-const server = new Deepstream(dsConfig);
-server.start();
-
-// var deepstreamC = require('deepstream.io-client-js');
-// const client = deepstreamC('ws://localhost:6020').login({username: "server"});
-
 var http = require('http');
 
 var app = express();
@@ -56,6 +49,14 @@ routes(app);
 
 var port = process.env.PORT || 8082;
 
-http.createServer(app).listen(port, function () {
+const hServer = http.createServer(app);
+hServer.listen(port, function () {
 	console.log('Node.js listening on port ' + port + '...');
 });
+
+const Deepstream = require('deepstream.io')
+const server = new Deepstream(dsConfig);
+server.start();
+
+// var deepstreamC = require('deepstream.io-client-js');
+// const client = deepstreamC('ws://localhost:6020').login({username: "server"});
