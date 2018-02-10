@@ -29,7 +29,7 @@ http {
                 proxy_http_version 1.1;
                 proxy_set_header Upgrade $http_upgrade;
                 proxy_set_header Connection $connection_upgrade;
-                # rewrite ^/deepstream(.*) $1 break;
+                rewrite ^/deepstream(.*) $1 break;
         }
         # root   /app/build;
         location / {
