@@ -18,11 +18,11 @@ sslCa: null
 # Connection Endpoint Configuration
 # to disable, replace configuration with null eg. `http: null`
 connectionEndpoints:
-  websocket:
+  websocket: null
     name: uws
     options:
         # port for the websocket server
-        port: 6020
+        port: ${PORT}
         # host for the websocket server
         host: fcc-stock-tracking-app.herokuapp.com
         # url path websocket connections connect to

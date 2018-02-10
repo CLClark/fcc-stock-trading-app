@@ -14,9 +14,10 @@ var pg = require('pg');
 var session = require('express-session');
 var pgSession = require('connect-pg-simple')(session);
 var parse = require('pg-connection-string').parse;
-var config = parse(process.env.DATABASE_URL);
 // var passport = require('passport');
 
+//postgresql config
+var config = parse(process.env.DATABASE_URL);
 config.ssl = true;
 
 const Deepstream = require('deepstream.io')
