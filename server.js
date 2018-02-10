@@ -50,8 +50,6 @@ app.use(session({
 routes(app);
 // routes(app, passport);
 
-
-
 const server = http.createServer(app);
 
 
@@ -73,6 +71,7 @@ const ds = new Deepstream(dsConfig);
 // const client = deepstreamC('ws://localhost:6020').login({username: "server"});
 
 ds.start();
+
 let port = '/tmp/app.socket';
 server.listen(port, function () {
 	console.log('Node.js listening on port ' + port + '...');
