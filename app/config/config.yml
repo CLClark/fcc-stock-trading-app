@@ -22,9 +22,9 @@ connectionEndpoints:
     name: express
     options:
         # port for the websocket server
-        port: ${PORT}
+        port: 6020
         # host for the websocket server
-        host: fcc-stock-tracking-app.herokuapp.com
+        host: localhost
         # url path websocket connections connect to
         urlPath: /deepstream
         # url path for http health-checks, GET requests to this path will return 200 if deepstream is alive
