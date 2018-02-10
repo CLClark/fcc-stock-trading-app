@@ -11,12 +11,12 @@ const fs = require('fs');
 
 var dsConfig;
 // var port = process.env.PORT || 8082;
-require('dotenv').load();
-dsConfig = "./app/config/config-local.yml";	
+// require('dotenv').load();
+// dsConfig = "./app/config/config-local.yml";	
 
-if(process.env.LOCAL == false){	
+// if(process.env.LOCAL == false){	
 	dsConfig = "./app/config/config.yml";
-} 
+// } 
 
 
 //postgresql config

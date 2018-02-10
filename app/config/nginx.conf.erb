@@ -30,10 +30,10 @@ http {
        }
 
       # Deepstream http endpoint
-      location /http {
-           proxy_pass http://httpendpoint;
-           proxy_http_version 1.1;
-           rewrite ^/http(.*) $1 break;
-      }
+    #   location /http {
+    #        proxy_pass http://httpendpoint;
+    #        proxy_http_version 1.1;
+    #        rewrite ^/http(.*) $1 break;
+    #   }
    }
 }
