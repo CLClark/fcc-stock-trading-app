@@ -49,16 +49,31 @@ routes(app);
 
 var port = process.env.PORT || 8082;
 
-const hServer = http.createServer(app);
-hServer.listen(port, function () {
-	console.log('Node.js listening on port ' + port + '...');
+const server = http.createServer(app);
+
+
+const WebSocket = require('ws');
+const wss = new WebSocket.Server({ server });
+
+wss.on('connection', function connection(ws, req) {
+	console.log("connected");
+//   const location = url.parse(req.url, true);
+//   // You might use location.query.access_token to authenticate or share sessions
+//   // or req.headers.cookie (see http://stackoverflow.com/a/16395220/151312)
+//   ws.on('message', function incoming(message) {
+//     console.log('received: %s', message);
+//   });
+//   ws.send('something');
 });
 
 const Deepstream = require('deepstream.io')
-const server = new Deepstream(dsConfig);
-
-// Pass it the existing HTTP server
-server.start();
+const ds = new Deepstream(dsConfig);
 
 // var deepstreamC = require('deepstream.io-client-js');
 // const client = deepstreamC('ws://localhost:6020').login({username: "server"});
+
+ds.start();
+
+server.listen(port, function () {
+	console.log('Node.js listening on port ' + port + '...');
+});
