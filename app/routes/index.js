@@ -22,5 +22,6 @@ module.exports = function (app){
 		.get(function(req, res){
 			alphaHandler.single(req.params.ticker, req, res);
 		});
+	
 
 };

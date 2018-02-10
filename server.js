@@ -1,12 +1,14 @@
 'use strict';
 
 var dsConfig;
-// if(process.env.LOCAL == false){
+var port = process.env.PORT || 8082;
+require('dotenv').load();
+dsConfig = "./app/config/config-local.yml";	
+if(process.env.LOCAL == false){	
+	port = "/tmp/nginx.socket";
 	dsConfig = "./app/config/config.yml";
-// } else {
-	// require('dotenv').load();
-	// dsConfig = "./app/config/config-local.yml";	
-// }
+} 
+
 
 var express = require('express');
 var routes = require('./app/routes/index.js');
@@ -47,24 +49,21 @@ app.use(session({
 routes(app);
 // routes(app, passport);
 
-var port = process.env.PORT || 8082;
+
 
 const server = http.createServer(app);
 
 
-const WebSocket = require('ws');
-const wss = new WebSocket.Server({ server });
+var WebSocketServer = require('uws').Server;
+var wss = new WebSocketServer({ server });
 
-wss.on('connection', function connection(ws, req) {
-	console.log("connected");
-//   const location = url.parse(req.url, true);
-//   // You might use location.query.access_token to authenticate or share sessions
-//   // or req.headers.cookie (see http://stackoverflow.com/a/16395220/151312)
-//   ws.on('message', function incoming(message) {
-//     console.log('received: %s', message);
-//   });
-//   ws.send('something');
-});
+// function onMessage(message) {
+//     console.log('received: ' + message);
+// }
+// wss.on('connection', function(ws) {
+//     ws.on('message', onMessage);
+//     ws.send('something');
+// });
 
 const Deepstream = require('deepstream.io')
 const ds = new Deepstream(dsConfig);
@@ -76,4 +75,5 @@ ds.start();
 
 server.listen(port, function () {
 	console.log('Node.js listening on port ' + port + '...');
+	FileUtils.touch("/tmp/app-initialized");
 });

@@ -1,7 +1,7 @@
 'use strict';
-if (process.env.LOCAL !== false) {
+// if (process.env.LOCAL == true) {
 	require('dotenv').load();
-}
+// }
 var queue = require('queue')
 
 const https = require('https');
