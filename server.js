@@ -13,9 +13,8 @@ var dsConfig;
 // var port = process.env.PORT || 8082;
 require('dotenv').load();
 dsConfig = "./app/config/config-local.yml";	
-var port;
-if(process.env.LOCAL == false){	
 
+if(process.env.LOCAL == false){	
 	dsConfig = "./app/config/config.yml";
 } 
 
@@ -74,18 +73,13 @@ const ds = new Deepstream(dsConfig);
 // const client = deepstreamC('ws://localhost:6020').login({username: "server"});
 
 ds.start();
-
-fs.readFile("/tmp/nginx", 'utf8', function (err, data){
-	let nsock = JSON.parse(data);
-	port = nsock.socket;
-	console.log(nsock);
-	
-	server.listen(port, function () {
-		console.log('Node.js listening on port ' + port + '...');
-		fs.writeFile("/tmp/app-initialized", "", () => {
-			console.log("wrote file tmp/app-initialized");
-		});
+let port = '/tmp/app.socket';
+server.listen(port, function () {
+	console.log('Node.js listening on port ' + port + '...');
+	fs.writeFile("/tmp/app-initialized", "", () => {
+		console.log("wrote file tmp/app-initialized");
 	});
 });
+
 
 
