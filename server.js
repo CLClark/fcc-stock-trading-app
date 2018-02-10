@@ -1,15 +1,5 @@
 'use strict';
 
-var dsConfig;
-var port = process.env.PORT || 8082;
-require('dotenv').load();
-dsConfig = "./app/config/config-local.yml";	
-if(process.env.LOCAL == false){	
-	port = "/tmp/nginx.socket";
-	dsConfig = "./app/config/config.yml";
-} 
-
-
 var express = require('express');
 var routes = require('./app/routes/index.js');
 var pg = require('pg');
@@ -18,6 +8,22 @@ var pgSession = require('connect-pg-simple')(session);
 var parse = require('pg-connection-string').parse;
 const fs = require('fs');
 // var passport = require('passport');
+
+var dsConfig;
+// var port = process.env.PORT || 8082;
+require('dotenv').load();
+dsConfig = "./app/config/config-local.yml";	
+var port;
+if(process.env.LOCAL == false){	
+
+	fs.readFile("/tmp/nginx", 'utf8', function (err, data){
+		let nsock = JSON.parse(data);
+		port = nsock.socket;
+		console.log(nsock);
+	});
+	dsConfig = "./app/config/config.yml";
+} 
+
 
 //postgresql config
 var config = parse(process.env.DATABASE_URL);
