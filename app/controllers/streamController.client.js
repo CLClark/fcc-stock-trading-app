@@ -6,6 +6,7 @@ var STREAMLIB = STREAMLIB || (function () {
 	var ourKey = "demo";
 	var dsClient;
 	var apiKey;	
+	var appUrl = window.location.host;
 	var apiAuth = appUrl + '/stock/';	
 	var _args = {}; // private
 	var charts = [];
@@ -116,7 +117,8 @@ var STREAMLIB = STREAMLIB || (function () {
 
 		dsClient: function (){
 			return new Promise(function (resolve, reject) {
-				let dsUrl = "ws://localhost:6020" + apiKey;
+				console.log(window.location);
+				let dsUrl = "ws://" + window.location.hostname + ":6020";
 				let options = {};
 				const client = deepstream(dsUrl, options);
 				
