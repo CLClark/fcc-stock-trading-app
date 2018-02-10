@@ -10,9 +10,9 @@ http {
         '' close;
     }
 
-    # upstream websocket {
-    #   server localhost:6020;
-    # }
+    upstream websocket {
+      server localhost:6020;
+    }
 #     upstream httpendpoint {
 #       server localhost:8080;
 #     }
@@ -20,16 +20,16 @@ http {
     server {
         listen <%= ENV["PORT"] %>;        
 
-       # Deepstream websocket redirect
-       location /deepstream {
-            proxy_pass http://localhost:6020;
-            proxy_http_version 1.1;
-            proxy_set_header Upgrade $http_upgrade;
-            proxy_set_header Connection $connection_upgrade;
-            rewrite ^/deepstream(.*) $1 break;
-       }
+        # Deepstream websocket redirect
+        location /deepstream {
+                proxy_pass http://websocket;
+                proxy_http_version 1.1;
+                proxy_set_header Upgrade $http_upgrade;
+                proxy_set_header Connection '$connection_upgrade;
+                rewrite ^/deepstream(.*) $1 break;
+        }
 
-      # Deepstream http endpoint
+    #   Deepstream http endpoint
     #   location /http {
     #        proxy_pass http://httpendpoint;
     #        proxy_http_version 1.1;
