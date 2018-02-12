@@ -73,8 +73,8 @@ ds.on("started", () => {
 });
 ds.start();
 
-let port = '/tmp/nginx.socket';
-// let port = 8080;
+// let port = '/tmp/nginx.socket';
+let port = 8081;
 server.listen(port, function () {
 	console.log('Node.js listening on port ' + port + '...');
 	fs.closeSync(fs.openSync('/tmp/app-initialized', 'w'));	

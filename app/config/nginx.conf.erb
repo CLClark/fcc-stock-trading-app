@@ -11,12 +11,12 @@ http {
     }
 
     upstream websocket {
-      server 0.0.0.0:6020;
+      server localhost:6020;
     }
 
     upstream app_server {
-        server unix:/tmp/nginx.socket fail_timeout=0;
-        # server localhost:8080 fail_timeout=0;
+        # server unix:/tmp/nginx.socket fail_timeout=0;
+        server localhost:8081 fail_timeout=0;
  	}
 
     server {
