@@ -2,6 +2,7 @@ node_modules/
 .eslintrc
 .env
 .settings
+.vscode/
 enc/
 /server_keystore.jks
 /csr-for-myserver.pem
