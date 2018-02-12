@@ -22,9 +22,9 @@ connectionEndpoints:
     name: uws
     options:
         # port for the websocket server
-        port: 6020
+        port: 
         # host for the websocket server
-        host: 0.0.0.0
+        host: /var/run/mysocket
         # url path websocket connections connect to
         # urlPath: /
         urlPath: /deepstream
