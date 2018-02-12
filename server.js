@@ -9,13 +9,13 @@ var parse = require('pg-connection-string').parse;
 const fs = require('fs');
 // var passport = require('passport');
 
-var dsConfig;
+var dsConfig = "./app/config/config.yml";
 // var port = process.env.PORT || 8082;
 // require('dotenv').load();
 // dsConfig = "./app/config/config-local.yml";	
 
 // if(process.env.LOCAL == false){	
-	dsConfig = "./app/config/config.yml";
+	// dsConfig = "./app/config/config.yml";
 // } 
 
 
@@ -68,6 +68,9 @@ const Deepstream = require('deepstream.io')
 const ds = new Deepstream(dsConfig);
 // var deepstreamC = require('deepstream.io-client-js');
 // const client = deepstreamC('ws://localhost:6020').login({username: "server"});
+ds.on("started", () => {
+	console.log("*********STARTED ");
+});
 ds.start();
 
 let port = '/tmp/nginx.socket';
