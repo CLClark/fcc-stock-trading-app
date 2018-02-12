@@ -8,18 +8,8 @@ var STOCKSWATCH = STOCKSWATCH || (function () {
 			// some other initialising
 		},
 		gc: function (givenCb) {
-			/* 
-			1.  call google.charts.load (with a callback)
-			2.  callback inserts chart divs (allorNothiing)
-			3.  getTheJson() call to apachevantage API
-			4.	
-			5.		
-			*/
-			// google.charts.load('current', { 'callback': allOrNothing, 'packages': ['corechart'] });
+			
 			google.charts.load("current", {'callback': givenCb, packages: ['annotationchart']});
-
-			function allOrNothing() {
-			}
 
 			function getTheJson(apiUrl, cb) {
 				//call to Alphavantage API, after receiving "events" Records list from Node server
@@ -29,12 +19,6 @@ var STOCKSWATCH = STOCKSWATCH || (function () {
 					})
 				);
 			}//getTheJson
-
-			// getTheJson(apiUrl, function (jsonResponse) {
-			// 	for (var i = 0; i < numStocks; i++) {
-			// 		//add a "stock" div for each
-			// 	}
-			// });
 		},
 
 		drawFactory: function (stocksArray) {
