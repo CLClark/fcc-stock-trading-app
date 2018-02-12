@@ -24,7 +24,7 @@ connectionEndpoints:
         # port for the websocket server
         port: 6020
         # host for the websocket server
-        host: 0.0.0.0
+        host: localhost
         # url path websocket connections connect to
         # urlPath: /
         urlPath: /deepstream
