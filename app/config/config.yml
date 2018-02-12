@@ -73,7 +73,7 @@ connectionEndpoints:
       enabled
       allowAllOrigins: true
       # a list of allowed origins
-      # origins:
+      origins: null
         # - 'https://example.com'
 
 # Logger Configuration
