@@ -71,10 +71,10 @@ const ds = new Deepstream(dsConfig);
 ds.on("started", () => {
 	console.log("*********STARTED ");
 });
-ds.start();
+// ds.start();
 
-// let port = '/tmp/nginx.socket';
-let port = 8081;
+let port = '/tmp/nginx.socket';
+// let port = 8081;
 server.listen(port, function () {
 	console.log('Node.js listening on port ' + port + '...');
 	fs.closeSync(fs.openSync('/tmp/app-initialized', 'w'));	
