@@ -11,7 +11,7 @@ http {
     }
 
     upstream websocket {
-      server unix:/var/run/mysocket;
+      server 0.0.0.0:6020;
     }
 
     upstream app_server {

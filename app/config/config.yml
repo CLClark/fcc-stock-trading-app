@@ -22,9 +22,9 @@ connectionEndpoints:
     name: uws
     options:
         # port for the websocket server
-        port: 
+        port: 6020
         # host for the websocket server
-        host: /var/run/mysocket
+        host: 0.0.0.0
         # url path websocket connections connect to
         # urlPath: /
         urlPath: /deepstream
@@ -45,7 +45,7 @@ connectionEndpoints:
         # maximum allowed size of an individual message in bytes
         maxMessageSize: 1048576
 
-  # http: 
+  http: null
   #   name: http
   #   options:
   #     # port for the http server
