@@ -128,7 +128,7 @@ var STREAMLIB = STREAMLIB || (function () {
 				// if(window.location.protocol == "https:"){
 				// dsUrl = "wss://" + window.location.hostname + ":6020"; }
 				// else { dsUrl = "ws://" + window.location.hostname + ":6020"; }
-				dsUrl = ("ws://" + window.location.hostname + "");
+				dsUrl = ("wss://" + window.location.hostname + "");
 				let options = {};
 				const client = deepstream(dsUrl, options);
 				

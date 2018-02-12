@@ -24,11 +24,11 @@ http {
 
         # Deepstream websocket redirect
         location /deepstream {
-                proxy_pass websocket;                
+                proxy_pass http://websocket;                
                 proxy_http_version 1.1;
                 proxy_set_header Upgrade $http_upgrade;
                 proxy_set_header Connection $connection_upgrade;
-                # rewrite ^/deepstream(.*) $1 break;                
+                # rewrite ^/deepstream(.*) $1 break;                                
         }
 
         location / {
@@ -36,7 +36,11 @@ http {
 			proxy_set_header Host $http_host;
 			proxy_redirect off;
 			proxy_pass http://app_server;
-			# proxy_pass app_server;
+            # proxy_pass app_server;
+
+            proxy_http_version 1.1;
+            proxy_set_header Upgrade $http_upgrade;
+            proxy_set_header Connection "upgrade";
 		}
 
     
