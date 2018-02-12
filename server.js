@@ -70,7 +70,7 @@ const ds = new Deepstream(dsConfig);
 ds.on("started", () => {
 	console.log("*********STARTED ");
 });
-// ds.start();
+ds.start();
 
 let port = '/tmp/nginx.socket';
 // let port = 8081;
