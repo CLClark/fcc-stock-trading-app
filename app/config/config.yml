@@ -6,9 +6,9 @@ logLevel: INFO
 # Directory where all plugins reside
 #libDir: ../lib
 
-# # Connectivity
-# # webfacing URL under which this client is reachable. Used for loadbalancing / failover
-# externalUrl: null
+# Connectivity
+# webfacing URL under which this client is reachable. Used for loadbalancing / failover
+externalUrl: http://fcc-stock-tracking-app.herokuapp.com/deepstream
 
 # SSL Configuration
 sslKey: null

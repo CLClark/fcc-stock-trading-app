@@ -123,7 +123,6 @@ var STREAMLIB = STREAMLIB || (function () {
 					// console.log("***********EXAMPLE SOCKET");
 				// }
 
-
 				console.log(window.location);
 				// if(window.location.protocol == "https:"){
 				// dsUrl = "wss://" + window.location.hostname + ":6020"; }

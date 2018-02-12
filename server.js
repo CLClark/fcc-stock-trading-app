@@ -66,10 +66,8 @@ const server = http.createServer(app);
 
 const Deepstream = require('deepstream.io')
 const ds = new Deepstream(dsConfig);
-
 // var deepstreamC = require('deepstream.io-client-js');
 // const client = deepstreamC('ws://localhost:6020').login({username: "server"});
-
 ds.start();
 
 let port = '/tmp/nginx.socket';
