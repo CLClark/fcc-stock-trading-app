@@ -118,16 +118,12 @@ var STREAMLIB = STREAMLIB || (function () {
 
 		dsClient: function (){
 			return new Promise(function (resolve, reject) {
-				// var exampleSocket = new WebSocket("ws://localhost:8082");
-				// exampleSocket.onmessage = function (event) {
-					// console.log("***********EXAMPLE SOCKET");
-				// }
-
-				console.log(window.location);
-				// if(window.location.protocol == "https:"){
-				// dsUrl = "wss://" + window.location.hostname + ":6020"; }
-				// else { dsUrl = "ws://" + window.location.hostname + ":6020"; }
-				dsUrl = ("ws://" + window.location.hostname + "");
+	
+				// console.log(window.location); //testing
+				if(window.location.protocol == "https:"){
+				dsUrl = ("wss://" + window.location.hostname);	}
+				else { dsUrl = ("ws://" + window.location.hostname); }
+				
 				let options = {};
 				const client = deepstream(dsUrl, options);
 				
