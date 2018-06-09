@@ -4,9 +4,7 @@ node_modules/
 .settings
 .vscode/
 enc/
-/server_keystore.jks
-/csr-for-myserver.pem
-/keypairout.key
 /fcc-dynamic
 /deepstream
 /fcc-nightlife
+/fcc-stocks-app

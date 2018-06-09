@@ -1,13 +1,13 @@
 {
   "name": "clclark-stocks-fcc",
   "version": "2.0.1",
-  "description": "Built from the clementinejs-fcc boilerplate",
+  "description": "Fullstack Javascript App for Collaborating on Stocks Tracking",
   "main": "server.js",
   "repository": {
     "type": "git",
     "url": "https://github.com/CLClark/fcc-stock-trading-app.git"
   },
-  "homepage": "http://localhost:8080/",
+  "homepage": "https://fcc-stock-tracking-app.herokuapp.com/",
   "bugs": "",
   "keywords": [
     "postgressql",
