@@ -8,8 +8,8 @@ Stocks Watching App using Node.js and Deepstream.io.
 
 https://fcc-stock-tracking-app.herokuapp.com/
 
-![Stockswatch Screenshot](/sw_screenshot.png)(https://fcc-stock-tracking-app.herokuapp.com/)
+![Stockswatch Screenshot](/sw_screenshot.png)
 
 ### Acknowledgement
 
-Thanks to [Clementine.js] FCC Boilerplate, for inspiring the first iteration of my apps.
+Thanks to [Clementine.js](https://www.clementinejs.com/) FCC Boilerplate, for inspiring the first iteration of my apps.
