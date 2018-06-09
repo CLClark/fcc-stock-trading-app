@@ -18,4 +18,10 @@ https://fcc-stock-tracking-app.herokuapp.com/
 ### Acknowledgement
 
 Thanks to [ALPHA VANTAGE](www.alphavantage.co) for realtime API access to stock data.
+
 Thanks to [Clementine.js](https://www.clementinejs.com/) FCC Boilerplate, for inspiring the first iteration of my apps.
+
+## License
+
+Apache License 2.0. [Click here for more information.](LICENSE.md)
+
