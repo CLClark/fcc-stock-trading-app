@@ -8,9 +8,7 @@ Stocks Watching App using Node.js and Deepstream.io.
 
 https://fcc-stock-tracking-app.herokuapp.com/
 
-![Stockswatch Screenshot](/sw_screenshot.png)
-Format: ![Alt Text](url)
-
+![Stockswatch Screenshot](/sw_screenshot.png)(https://fcc-stock-tracking-app.herokuapp.com/)
 
 ### Acknowledgement
 
